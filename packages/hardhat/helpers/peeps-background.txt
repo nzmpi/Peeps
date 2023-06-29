@@ -1,0 +1,12 @@
+///background
+<path d="M 0 230, 400 180, 400 400, 0 400 z" fill="#fff019" stroke="black"/>
+<path d="M 0 230, 400 180, 400 0, 0 0 z" fill="#bf0439" stroke="black"/>
+
+<path d="M 0 60, 400 250, 400 400, 0 400 z" fill="#fff019" stroke="black"/>
+<path d="M 0 60, 400 250, 400 0, 0 0 z" fill="#bf0439" stroke="black"/>
+
+<path d="M 0 260 C0 260, 100 112, 400 260 M 400 260, 400 400, 0 400 0 260" fill="#fff019" stroke="black"/>
+<path d="M 0 260 C0 260, 100 112, 400 260 M 400 260, 400 0, 0 0 0 260" fill="#bf0439" stroke="black"/>
+
+<path d="M400 200, 400 400, 0 400, 0 260 C100 112, 200 370, 400 200 " fill="#fff019" stroke="black"/>
+<path d="M400 200, 400 0, 0 0, 0 260 C100 112, 200 370, 400 200 " fill="#eb34de" stroke="black"/>

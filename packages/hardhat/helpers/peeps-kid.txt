@@ -1,0 +1,65 @@
+body adult
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+  <path d="M190 180, 190 280, 180 290" fill="none" stroke="black" stroke-width="3"/>
+  <path d="M210 180, 210 280, 220 290" fill="none" stroke="black" stroke-width="3"/>
+
+  <ellipse cx="200" cy="200" rx="30" ry="45" fill="#eb34de" stroke="black" />
+  <ellipse cx="200" cy="145" rx="15" ry="20" fill="white" /> 
+
+  <circle cx="193" cy="141" r="2" fill="#6746fa" stroke="black" />
+  <circle cx="205" cy="141" r="2" fill="#6746fa" stroke="black" />
+</svg>
+
+///eyebrows///
+<path d="M190 136, 196 136" fill="none" stroke="black" />
+<path d="M201 136, 205 134, 209 136" fill="none" stroke="black" />
+
+<path d="M190 136, 192 135, 194 135, 197 136" fill="none" stroke="black" />
+<path d="M202 136, 204 135, 206 135, 209 136" fill="none" stroke="black" />
+
+<path d="M190 136, 197 136" fill="none" stroke="black" />
+<path d="M202 136, 209 136" fill="none" stroke="black" />
+
+///mouths///
+<path d="M191 153 C197 144, 203 162, 208 153" fill="none" stroke="black" />
+<line x1="193" y1="153" x2="206" y2="153" stroke="black" />
+<path d="M193 153 C198 157, 201 157, 206 153" fill="none" stroke="black" />
+<path d="M193 155, 200 154, 206 151" fill="none" stroke="black" />   
+
+<path d="M194 156, 196 153, 197 152, 198 151, 200 150, 202 150, 204 151, 205 152, 206 156" fill="black" stroke="black" />
+<path d="M194 156 Q 206 147 206 156 z" fill="red" stroke="black" />
+
+<path d="M194 150, 195 153, 196 155, 197 156, 199 157, 200 157, 203 157, 200 157, 203 156, 205 154, 206 150 z" fill="black" />
+<path d="M196 154, 197 155, 198 156, 200 156, 200 156, 202 156, 204 155, 204 153, 204 153, 203 153, 202 153, 201 153, 200 153" fill="red" />
+
+///left arm///
+<line x1="181" y1="168" x2="155" y2="215" stroke="black" stroke-width="3"/>
+<line x1="180" y1="168" x2="153" y2="127" stroke="black" stroke-width="3"/>
+
+<line x1="181" y1="168" x2="155" y2="215" stroke="black" stroke-width="3">
+  <animate attributeName="x2" attributeType="XML" values="155;125;155;125;155" dur="2s" repeatCount="indefinite" />
+  <animate attributeName="y2" attributeType="XML" values="215;170;127;170;215" dur="2s" repeatCount="indefinite" />
+</line>
+
+<path d="M181 168 L168 168 C148 150, 150 185, 125 168" fill="none" stroke="black" stroke-width="3"/>
+<path d="M181 168 L168 168 C148 190, 150 145, 125 165" fill="none" stroke="black" stroke-width="3"/>
+
+<path fill="none" stroke="black" stroke-width="3">
+  <animate attributeName="d" attributeType="XML" values="M181 168 L168 168 C148 150, 150 185, 125 168; M181 168 L168 168 C148 190, 150 145, 125 165; M181 168 L168 168 C148 150, 150 185, 125 168" dur="2s" repeatCount="indefinite" />
+</path>
+
+///right arm///
+<line x1="219" y1="168" x2="246" y2="215" stroke="black" stroke-width="3"/>
+<line x1="220" y1="168" x2="248" y2="127" stroke="black" stroke-width="3"/>
+
+<line x1="219" y1="168" x2="246" y2="215" stroke="black" stroke-width="3">
+  <animate attributeName="x2" attributeType="XML" values="246;276;246;276;246" dur="2s" repeatCount="indefinite" />
+  <animate attributeName="y2" attributeType="XML" values="215;170;127;170;215" dur="2s" repeatCount="indefinite" />
+</line>
+
+<path d="M218 168 L231 168 C251 150, 249 185, 274 168" fill="none" stroke="black" stroke-width="3"/>
+<path d="M218 168 L231 168 C251 190, 249 145, 274 165" fill="none" stroke="black" stroke-width="3"/>
+
+<path fill="none" stroke="black" stroke-width="3">
+  <animate attributeName="d" attributeType="XML" values="M218 168 L231 168 C251 150, 249 185, 274 168; M218 168 L231 168 C251 190, 249 145, 274 165; M218 168 L231 168 C251 150, 249 185, 274 168" dur="2s" repeatCount="indefinite" />
+</path>
