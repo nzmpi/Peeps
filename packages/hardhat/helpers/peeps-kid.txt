@@ -1,10 +1,10 @@
-body adult
+body
 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
   <path d="M190 180, 190 280, 180 290" fill="none" stroke="black" stroke-width="3"/>
   <path d="M210 180, 210 280, 220 290" fill="none" stroke="black" stroke-width="3"/>
 
   <ellipse cx="200" cy="200" rx="30" ry="45" fill="#eb34de" stroke="black" />
-  <ellipse cx="200" cy="145" rx="15" ry="20" fill="white" /> 
+  <ellipse cx="200" cy="145" rx="15" ry="20" fill="white"  stroke="black" /> 
 
   <circle cx="193" cy="141" r="2" fill="#6746fa" stroke="black" />
   <circle cx="205" cy="141" r="2" fill="#6746fa" stroke="black" />

@@ -3,15 +3,20 @@ pragma solidity 0.8.20;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "./Utils.sol";
 
-contract Peeps is ERC721("PEEPS","PPS") {
+contract Peeps is Utils, ERC721("PEEPS","PPS") {
     using Strings for uint256;
-    address public owner;
-    uint256 totalPeeps = 1;
     uint256 constant MAX_MINT = 20;
+    uint24 constant MAX_COLOR = type(uint24).max; // 0xffffff
+    uint256 totalPeeps = 1;
 
-    constructor() payable {
-        owner = msg.sender;
+    struct Peep {
+        uint256 genes;
+        uint256[] grandParents;
+        uint256[] parents;
+        uint256[] children;
+        uint256[] grandChildren;
     }
 
     function mint() external payable {
