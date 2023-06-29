@@ -9,14 +9,14 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     using Strings for uint256;
     uint256 constant MAX_MINT = 20;
     uint24 constant MAX_COLOR = type(uint24).max; // 0xffffff
-    uint256 totalPeeps = 1;
+    uint64 totalPeeps = 1;
 
     struct Peep {
         uint256 genes;
-        uint256[] grandParents;
-        uint256[] parents;
-        uint256[] children;
-        uint256[] grandChildren;
+        uint64[] grandParents;
+        uint64[] parents;
+        uint64[] children;
+        uint64[] grandChildren;
     }
 
     function mint() external payable {
