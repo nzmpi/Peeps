@@ -5,8 +5,13 @@ const contracts = {
       name: "localhost",
       contracts: {
         Peeps: {
-          address: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+          address: "0x95401dc811bb5740090279Ba06cfA8fcF6113778",
           abi: [
+            {
+              inputs: [],
+              stateMutability: "payable",
+              type: "constructor",
+            },
             {
               inputs: [],
               name: "NotOwner",
@@ -126,6 +131,25 @@ const contracts = {
                   internalType: "uint256",
                   name: "",
                   type: "uint256",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "uint256",
+                  name: "tokenId",
+                  type: "uint256",
+                },
+              ],
+              name: "getAll",
+              outputs: [
+                {
+                  internalType: "string[4]",
+                  name: "p",
+                  type: "string[4]",
                 },
               ],
               stateMutability: "view",

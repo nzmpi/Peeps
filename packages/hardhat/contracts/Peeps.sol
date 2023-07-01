@@ -12,13 +12,17 @@ import "./lib/SVGData.sol";
 contract Peeps is Utils, ERC721("PEEPS","PPS") {
     using Strings for uint256;
     uint256 constant MAX_MINT = 20;
-    uint64 totalPeeps = 1;    
+    uint64 totalPeeps = 1;   
 
     Peep[] public peeps;
 
     mapping(address => uint64[]) public ownedPeeps;
 
-    function mint() external payable {
+    constructor() payable {
+      mint();
+    }
+
+    function mint() public payable {
       if (totalPeeps > MAX_MINT) revert();
       uint256 id = totalPeeps;
       _safeMint(msg.sender, id);
@@ -48,6 +52,13 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
       return PeepsMetadata.tokenURI(peeps[tokenId-1]);
+    }
+
+    function getAll(uint256 tokenId) public view returns (string[4] memory p) {
+      p[0] = PeepsMetadata.generatePeep(peeps[tokenId-1], 0);
+      p[1] = PeepsMetadata.generatePeep(peeps[tokenId-1], 1);
+      p[2] = PeepsMetadata.generatePeep(peeps[tokenId-1], 2);
+      p[3] = PeepsMetadata.generatePeep(peeps[tokenId-1], 3);
     }
 
     function getRandomNumber() internal view returns (uint256) {

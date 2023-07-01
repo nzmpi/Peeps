@@ -9,23 +9,23 @@ body
   <path d="M180 280, 180 360, 160 375" fill="none" stroke="black" stroke-width="5"/>
   <path d="M215 280, 215 360, 235 375" fill="none" stroke="black" stroke-width="5"/>
 
-  <ellipse cx="200" cy="200" rx="60" ry="90" fill="url(#gradient)" stroke="#000" />
-  <ellipse cx="200" cy="90" rx="30" ry="40" fill="white" stroke="black" /> 
+  <ellipse cx="200" cy="200" rx="60" ry="90" fill="url(#gradient)" stroke="black"/>
+  <ellipse cx="200" cy="90" rx="30" ry="40" fill="white" stroke="black"/> 
 </svg>
 
 ///eyebrows///
-<path d="M180 71, 194 71" fill="none" stroke="black" />
-<path d="M203 71, 210 69, 217 71" fill="none" stroke="black" />
+<path d="M180 71, 194 71" fill="none" stroke="black"/>
+<path d="M203 71, 210 69, 217 71" fill="none" stroke="black"/>
 
-<path d="M180 73, 182 72, 185 71, 187 71, 189 71, 194 73" fill="none" stroke="black" />
-<path d="M203 73, 205 72, 208 71, 210 71, 212 71, 217 73" fill="none" stroke="black" />
+<path d="M180 73, 182 72, 185 71, 187 71, 189 71, 194 73" fill="none" stroke="black"/>
+<path d="M203 73, 205 72, 208 71, 210 71, 212 71, 217 73" fill="none" stroke="black"/>
 
-<path d="M180 71, 194 71" fill="none" stroke="black" />
-<path d="M203 71, 217 71" fill="none" stroke="black" />
+<path d="M180 71, 194 71" fill="none" stroke="black"/>
+<path d="M203 71, 217 71" fill="none" stroke="black"/>
 
 ///eyes///
-<circle cx="187" cy="80" r="5" fill="#6746fa" stroke="black"  />
-<circle cx="210" cy="80" r="5" fill="#6746fa" stroke="black"  /> 
+<circle cx="187" cy="80" r="5" fill="#6746fa" stroke="black"/>
+<circle cx="210" cy="80" r="5" fill="#6746fa" stroke="black"/> 
 
 ///dead eyes///
 <line x1="192" y1="76" x2="181" y2="84" stroke="black"/>
@@ -34,28 +34,28 @@ body
 <line x1="205" y1="76" x2="214" y2="84" stroke="black"/>
 
 ///moustache///
-<path d="M 180 90, 178 91, 178 93, 180 95, 185 97, 195 94, 197 90" fill="none" stroke="black" />
-<path d="M202 90, 204 94, 214 97, 219 95, 221 93, 221 91, 219 90" fill="none" stroke="black" />
+<path d="M 180 90, 178 91, 178 93, 180 95, 185 97, 195 94, 197 90" fill="none" stroke="black"/>
+<path d="M202 90, 204 94, 214 97, 219 95, 221 93, 221 91, 219 90" fill="none" stroke="black"/>
 
-<line x1="187" y1="95" x2="195" y2="95" stroke="black" />
-<line x1="203" y1="95" x2="211" y2="95" stroke="black" />
+<line x1="187" y1="95" x2="195" y2="95" stroke="black"/>
+<line x1="203" y1="95" x2="211" y2="95" stroke="black"/>
 
-<path d="M188 96 Q 201 91 211 96" fill="none" stroke="black" stroke-width="2" />
+<path d="M188 96 Q 201 91 211 96" fill="none" stroke="black" stroke-width="2"/>
 
-<path d="M185 97, 195 94, 197 90" fill="none" stroke="black" />
-<path d="M202 90, 204 94, 214 97" fill="none" stroke="black" />
+<path d="M185 97, 195 94, 197 90" fill="none" stroke="black"/>
+<path d="M202 90, 204 94, 214 97" fill="none" stroke="black"/>
 
 ///mouths///
-<path d="M183 107 C193 92, 203 122, 213 107" fill="none" stroke="black" />
-<line x1="187" y1="107" x2="210" y2="107" stroke="black" />
-<path d="M185 104 C194 112, 202 112, 213 104" fill="none" stroke="black" />
-<path d="M187 106, 205 104, 206 104, 207 103, 208 103, 209 102, 210 102, 211 101, 212 101, 213 100" fill="none" stroke="black" />   
+<path d="M183 107 C193 92, 203 122, 213 107" fill="none" stroke="black"/>
+<line x1="187" y1="107" x2="210" y2="107" stroke="black"/>
+<path d="M185 104 C194 112, 202 112, 213 104" fill="none" stroke="black"/>
+<path d="M187 106, 205 104, 206 104, 207 103, 208 103, 209 102, 210 102, 211 101, 212 101, 213 100" fill="none" stroke="black"/>   
 
-<path d="M190 110, 191 106, 192 104, 195 101, 198 99, 200 99, 202 99, 207 101, 209 104, 209 107, 210 110 z" fill="black" stroke="black" />
-<path d="M190 110 Q 210 95 210 110 z" fill="red" stroke="black" />
+<path d="M190 110, 191 106, 192 104, 195 101, 198 99, 200 99, 202 99, 207 101, 209 104, 209 107, 210 110 z" fill="black" stroke="black"/>
+<path d="M190 110 Q 210 95 210 110 z" fill="red" stroke="black"/>
 
-<path d="M190 102, 191 106, 192 108, 195 112, 198 113, 200 113, 202 113, 207 111, 209 107, 210 102 z" fill="black" stroke="black" />
-<path d="M192 108, 195 112, 198 113, 200 113, 202 113, 205 112, 207 111, 209 107, 204 106, 203 106, 202 106, 201 106, 200 106" fill="red" />
+<path d="M190 102, 191 106, 192 108, 195 112, 198 113, 200 113, 202 113, 207 111, 209 107, 210 102 z" fill="black" stroke="black"/>
+<path d="M192 108, 195 112, 198 113, 200 113, 202 113, 205 112, 207 111, 209 107, 204 106, 203 106, 202 106, 201 106, 200 106" fill="red"/>
 
 ///left arm///
 <line x1="165" y1="130" x2="100" y2="240" stroke="black" stroke-width="5"/>

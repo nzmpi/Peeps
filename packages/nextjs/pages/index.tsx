@@ -11,7 +11,7 @@ import {
 const Home: NextPage = () => {
   const { data: DataBack } = useScaffoldContractRead({
     contractName: "Peeps",
-    functionName: "tokenURI",
+    functionName: "getAll",
     args: [BigNumber.from(1)],
   });
 
@@ -19,9 +19,17 @@ const Home: NextPage = () => {
     <>
       <MetaHeader />
       <div className="flex items-center flex-col flex-grow pt-10">
-      {DataBack}
       <div className="flex items-center flex-raw flex-grow">    
-        <div dangerouslySetInnerHTML={{ __html: DataBack || "" }}/>      
+        <div dangerouslySetInnerHTML={{ __html: DataBack?.[0] || "" }}/>   
+      </div>
+      <div className="flex items-center flex-raw flex-grow">    
+        <div dangerouslySetInnerHTML={{ __html: DataBack?.[1] || "" }}/>   
+      </div>
+      <div className="flex items-center flex-raw flex-grow">    
+        <div dangerouslySetInnerHTML={{ __html: DataBack?.[2] || "" }}/>   
+      </div>
+      <div className="flex items-center flex-raw flex-grow">    
+        <div dangerouslySetInnerHTML={{ __html: DataBack?.[3] || "" }}/>   
       </div>
 
         <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
