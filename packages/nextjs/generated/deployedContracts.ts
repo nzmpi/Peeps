@@ -5,12 +5,12 @@ const contracts = {
       name: "localhost",
       contracts: {
         Peeps: {
-          address: "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+          address: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
           abi: [
             {
               inputs: [],
-              stateMutability: "payable",
-              type: "constructor",
+              name: "NotOwner",
+              type: "error",
             },
             {
               anonymous: false,
@@ -86,6 +86,13 @@ const contracts = {
               ],
               name: "Transfer",
               type: "event",
+            },
+            {
+              inputs: [],
+              name: "acceptOwnership",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
             },
             {
               inputs: [
@@ -188,6 +195,30 @@ const contracts = {
               type: "function",
             },
             {
+              inputs: [
+                {
+                  internalType: "address",
+                  name: "",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256",
+                },
+              ],
+              name: "ownedPeeps",
+              outputs: [
+                {
+                  internalType: "uint64",
+                  name: "",
+                  type: "uint64",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
               inputs: [],
               name: "owner",
               outputs: [
@@ -217,6 +248,76 @@ const contracts = {
                 },
               ],
               stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256",
+                },
+              ],
+              name: "peeps",
+              outputs: [
+                {
+                  internalType: "uint256",
+                  name: "genes",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint8",
+                  name: "hasHat",
+                  type: "uint8",
+                },
+                {
+                  internalType: "uint32",
+                  name: "kidTime",
+                  type: "uint32",
+                },
+                {
+                  internalType: "uint32",
+                  name: "adultTime",
+                  type: "uint32",
+                },
+                {
+                  internalType: "uint32",
+                  name: "oldTime",
+                  type: "uint32",
+                },
+                {
+                  internalType: "string",
+                  name: "name",
+                  type: "string",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "pendingOwner",
+              outputs: [
+                {
+                  internalType: "address",
+                  name: "",
+                  type: "address",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "address",
+                  name: "_newOwner",
+                  type: "address",
+                },
+              ],
+              name: "proposeOwner",
+              outputs: [],
+              stateMutability: "payable",
               type: "function",
             },
             {
@@ -371,6 +472,13 @@ const contracts = {
                 },
               ],
               name: "transferFrom",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "withdraw",
               outputs: [],
               stateMutability: "nonpayable",
               type: "function",
