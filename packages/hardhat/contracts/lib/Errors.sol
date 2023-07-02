@@ -3,4 +3,6 @@ pragma solidity 0.8.20;
 
 library Errors {
     error NotOwner();
+    error NotAllowed();
+    error WrongPeep();
 }

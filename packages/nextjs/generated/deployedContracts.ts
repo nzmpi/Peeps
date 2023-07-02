@@ -5,7 +5,7 @@ const contracts = {
       name: "localhost",
       contracts: {
         Peeps: {
-          address: "0xf5059a5D33d5853360D16C683c16e67980206f36",
+          address: "0x36b58F5C1969B7b6591D752ea6F5486D069010AB",
           abi: [
             {
               inputs: [],
@@ -14,7 +14,17 @@ const contracts = {
             },
             {
               inputs: [],
+              name: "NotAllowed",
+              type: "error",
+            },
+            {
+              inputs: [],
               name: "NotOwner",
+              type: "error",
+            },
+            {
+              inputs: [],
+              name: "WrongPeep",
               type: "error",
             },
             {
@@ -102,6 +112,19 @@ const contracts = {
             {
               inputs: [
                 {
+                  internalType: "uint256",
+                  name: "tokenId",
+                  type: "uint256",
+                },
+              ],
+              name: "allowBreeding",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
                   internalType: "address",
                   name: "to",
                   type: "address",
@@ -140,6 +163,81 @@ const contracts = {
               inputs: [
                 {
                   internalType: "uint256",
+                  name: "tokenId1",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "tokenId2",
+                  type: "uint256",
+                },
+              ],
+              name: "breed",
+              outputs: [],
+              stateMutability: "payable",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "breedingFee",
+              outputs: [
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "uint256",
+                  name: "newFee",
+                  type: "uint256",
+                },
+              ],
+              name: "changeBreedingFee",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "uint256",
+                  name: "newFee",
+                  type: "uint256",
+                },
+              ],
+              name: "changeMintingFee",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "uint256",
+                  name: "tokenId",
+                  type: "uint256",
+                },
+                {
+                  internalType: "string",
+                  name: "newName",
+                  type: "string",
+                },
+              ],
+              name: "changeName",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "uint256",
                   name: "tokenId",
                   type: "uint256",
                 },
@@ -150,6 +248,25 @@ const contracts = {
                   internalType: "address",
                   name: "",
                   type: "address",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "address",
+                  name: "_owner",
+                  type: "address",
+                },
+              ],
+              name: "getOwnedPeeps",
+              outputs: [
+                {
+                  internalType: "uint64[]",
+                  name: "",
+                  type: "uint64[]",
                 },
               ],
               stateMutability: "view",
@@ -170,6 +287,26 @@ const contracts = {
                       internalType: "uint8",
                       name: "hasHat",
                       type: "uint8",
+                    },
+                    {
+                      internalType: "uint8",
+                      name: "breedCount",
+                      type: "uint8",
+                    },
+                    {
+                      internalType: "uint24",
+                      name: "bodyColor1",
+                      type: "uint24",
+                    },
+                    {
+                      internalType: "uint24",
+                      name: "bodyColor2",
+                      type: "uint24",
+                    },
+                    {
+                      internalType: "uint24",
+                      name: "eyesColor",
+                      type: "uint24",
                     },
                     {
                       internalType: "uint32",
@@ -197,19 +334,40 @@ const contracts = {
                       type: "uint64[]",
                     },
                     {
-                      internalType: "uint64[]",
-                      name: "grandChildren",
-                      type: "uint64[]",
-                    },
-                    {
                       internalType: "string",
-                      name: "name",
+                      name: "peepName",
                       type: "string",
                     },
                   ],
                   internalType: "struct Peep[]",
                   name: "",
                   type: "tuple[]",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "getPeepsMetadata",
+              outputs: [
+                {
+                  internalType: "address",
+                  name: "",
+                  type: "address",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "getTime",
+              outputs: [
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256",
                 },
               ],
               stateMutability: "view",
@@ -248,36 +406,25 @@ const contracts = {
             },
             {
               inputs: [],
-              name: "name",
+              name: "mintingFee",
               outputs: [
-                {
-                  internalType: "string",
-                  name: "",
-                  type: "string",
-                },
-              ],
-              stateMutability: "view",
-              type: "function",
-            },
-            {
-              inputs: [
-                {
-                  internalType: "address",
-                  name: "",
-                  type: "address",
-                },
                 {
                   internalType: "uint256",
                   name: "",
                   type: "uint256",
                 },
               ],
-              name: "ownedPeeps",
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "name",
               outputs: [
                 {
-                  internalType: "uint64",
+                  internalType: "string",
                   name: "",
-                  type: "uint64",
+                  type: "string",
                 },
               ],
               stateMutability: "view",

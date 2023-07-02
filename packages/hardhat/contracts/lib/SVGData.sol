@@ -61,10 +61,10 @@ library SVGData {
   function getAdultEyes(uint256 color) internal pure returns (string memory) {
     return string(abi.encodePacked(
       '<circle cx="187" cy="80" r="5" fill="#',
-      SVGData.toColor(uint24(color)),
+      toColor(uint24(color)),
       '" stroke="black"/>',
       '<circle cx="210" cy="80" r="5" fill="#',
-      SVGData.toColor(uint24(color)),
+      toColor(uint24(color)),
       '" stroke="black"/>'
     ));
   }

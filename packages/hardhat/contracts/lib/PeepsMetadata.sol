@@ -6,7 +6,7 @@ import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 import "./Structs.sol";
 import "./SVGData.sol";
 
-library PeepsMetadata {
+contract PeepsMetadata {
   using Strings for uint256;
   uint256 constant MAX_COLOR = type(uint24).max; // 0xffffff
   uint256 constant NUMBER_OF_BACKGROUNDS = 4;
@@ -14,38 +14,34 @@ library PeepsMetadata {
   uint256 constant NUMBER_OF_EYEBROWS = 3;
   uint256 constant NUMBER_OF_MOUTHS = 6;
   uint256 constant NUMBER_OF_MOUSTACHE = 5;
-  uint256 constant kidTime_MIN = 2 hours;
-  uint256 constant adultTime_MIN = 2 weeks;
-  uint256 constant oldTime_MIN = 10 hours;
+  uint256 constant kidTime_MIN = 1 minutes;//2 hours;
+  uint256 constant adultTime_MIN = 1 minutes;//2 weeks;
+  uint256 constant oldTime_MIN = 1 minutes;//10 hours;
 
-  function tokenURI(Peep storage peep, uint256 id) internal view returns (string memory) {
+  function tokenURI(Peep calldata peep, uint256 id) external view returns (string memory) {
     //string memory description = "This is a Peep!";
     //string memory image = Base64.encode(bytes(generatePeep(peep)));
 
     //return generateSVGTokenURI(peep.name, description, description, image);
     string memory idString = id.toString();
-    return generatePeep(peep,idString,0);
+    return generatePeep(peep,idString);
   }
 
-  function generatePeep(Peep storage peep, string memory id, uint256 p) internal view returns (string memory) {
+  function generatePeep(Peep calldata peep, string memory id) internal view returns (string memory) {
     string memory header = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">';
     string memory footer = '</svg>';
-    //if (block.timestamp < peep.kidTime) {
-      //return string(abi.encodePacked(header,getKid(peep),footer));
-    //} else if (block.timestamp < peep.adultTime) {
-      //return string(abi.encodePacked(header,getAdult(peep),footer));
-    //} else if (block.timestamp < peep.oldTime) {
-      //return string(abi.encodePacked(header,getOld(peep),footer));
-    //} else {
-      //return string(abi.encodePacked(header,getDead(peep),footer));
-    //}
-    if (p == 0) return string(abi.encodePacked(header,getKid(peep),footer));
-    else if (p == 1) return string(abi.encodePacked(header,getAdult(peep, id),footer));
-    else if (p == 2) return string(abi.encodePacked(header,getOld(peep),footer));
-    else return string(abi.encodePacked(header,getDead(peep),footer));
+    if (block.timestamp < peep.kidTime) {
+      return string(abi.encodePacked(header,getKid(peep),footer));
+    } else if (block.timestamp < peep.adultTime) {
+      return string(abi.encodePacked(header,getAdult(peep, id),footer));
+    } else if (block.timestamp < peep.oldTime) {
+      return string(abi.encodePacked(header,getOld(peep),footer));
+    } else {
+      return string(abi.encodePacked(header,getDead(peep),footer));
+    }
   }
 
-  function getKid(Peep storage peep) internal view returns (string memory svg) {
+  function getKid(Peep calldata peep) internal pure returns (string memory svg) {
     uint256 genes = peep.genes;    
     // avoiding 'Stack too deep' error
     uint256 x1;
@@ -81,11 +77,9 @@ library PeepsMetadata {
     ));
 
     // body
-    genes /= 10;
-    x1 = genes % MAX_COLOR;
     svg = string(abi.encodePacked(svg,
       '<ellipse cx="200" cy="200" rx="30" ry="45" fill="#',
-      SVGData.toColor(uint24(x1)),
+      SVGData.toColor(peep.bodyColor1),
       '" stroke="black"/>'
     ));
 
@@ -95,21 +89,19 @@ library PeepsMetadata {
     ));
 
     // eyebrows
-    genes /= 100; // skipping bodyColor2
+    genes /= 10;
     x1 = genes % NUMBER_OF_EYEBROWS;
     svg = string(abi.encodePacked(svg,
       SVGData.getKidEyebrows(x1)
     ));
 
     // eyes
-    genes /= 10;
-    x1 = genes % MAX_COLOR;
     svg = string(abi.encodePacked(svg,
       '<circle cx="193" cy="141" r="2" fill="#',
-      SVGData.toColor(uint24(x1)),
+      SVGData.toColor(peep.eyesColor),
       '" stroke="black"/>',
       '<circle cx="205" cy="141" r="2" fill="#',
-      SVGData.toColor(uint24(x1)),
+      SVGData.toColor(peep.eyesColor),
       '" stroke="black"/>'
     ));
 
@@ -122,7 +114,7 @@ library PeepsMetadata {
 
   }
 
-  function getAdult(Peep storage peep, string memory id) internal view returns (string memory svg) {
+  function getAdult(Peep calldata peep, string memory id) internal pure returns (string memory svg) {
     uint256 genes = peep.genes;    
     // avoiding 'Stack too deep' error
     uint256 x1;
@@ -157,17 +149,13 @@ library PeepsMetadata {
     ));
 
     // body
-    genes /= 10;
-    x1 = genes % MAX_COLOR;
-    genes /= 10;
-    x2 = genes % MAX_COLOR;
     svg = string(abi.encodePacked(svg,
       '<defs><linearGradient id="',
       id,
       '" gradientUnits="userSpaceOnUse" x1="150" y1="150" x2="250" y2="250"><stop offset="0%" stop-color="#',
-      SVGData.toColor(uint24(x1)),
+      SVGData.toColor(peep.bodyColor1),
       '"/><stop offset="120%" stop-color="#',
-      SVGData.toColor(uint24(x2)),
+      SVGData.toColor(peep.bodyColor2),
       '"/></linearGradient></defs><ellipse cx="200" cy="200" rx="60" ry="90" fill="url(#',
       id,
       ')" stroke="black"/>'
@@ -186,10 +174,8 @@ library PeepsMetadata {
     ));
 
     // eyes
-    genes /= 10;
-    x1 = genes % MAX_COLOR;
     svg = string(abi.encodePacked(svg,
-      SVGData.getAdultEyes(x1)
+      SVGData.getAdultEyes(peep.eyesColor)
     ));
 
     // moustache
@@ -208,7 +194,7 @@ library PeepsMetadata {
 
   }
 
-  function getOld(Peep storage peep) internal view returns (string memory svg) {
+  function getOld(Peep calldata peep) internal pure returns (string memory svg) {
     uint256 genes = peep.genes;    
     // avoiding 'Stack too deep' error
     uint256 x1;
@@ -243,11 +229,9 @@ library PeepsMetadata {
     ));
 
     // body
-    genes /= 100;
-    x2 = genes % MAX_COLOR;
     svg = string(abi.encodePacked(svg,
       '<ellipse cx="200" cy="200" rx="60" ry="90" fill="#',
-      SVGData.toColor(uint24(x2)),
+      SVGData.toColor(peep.bodyColor2),
       '" stroke="black"/>'
     ));
 
@@ -264,10 +248,8 @@ library PeepsMetadata {
     ));
 
     // eyes
-    genes /= 10;
-    x1 = genes % MAX_COLOR;
     svg = string(abi.encodePacked(svg,
-      SVGData.getAdultEyes(x1)
+      SVGData.getAdultEyes(peep.eyesColor)
     ));
 
     // wrinkles
@@ -291,7 +273,7 @@ library PeepsMetadata {
 
   }
 
-  function getDead(Peep storage peep) internal view returns (string memory svg) {
+  function getDead(Peep calldata peep) internal pure returns (string memory svg) {
     uint256 genes = peep.genes;    
     // avoiding 'Stack too deep' error
     uint256 x1;
@@ -393,13 +375,13 @@ library PeepsMetadata {
       );
   }
 
-  function getTimes(uint256 genes) internal view returns (
+  function getTimes(uint256 genes) external view returns (
     uint32 kidTime,
     uint32 adultTime,
     uint32 oldTime
     ) {
       kidTime = uint32(genes % kidTime_MIN + block.timestamp + kidTime_MIN);
-      adultTime = uint32(genes % adultTime_MIN + block.timestamp + adultTime_MIN);
-      oldTime = uint32(genes % oldTime_MIN + block.timestamp + oldTime_MIN);
+      adultTime = uint32(genes % adultTime_MIN + adultTime_MIN) + kidTime;
+      oldTime = uint32(genes % oldTime_MIN + oldTime_MIN) + adultTime;
     }
 }
