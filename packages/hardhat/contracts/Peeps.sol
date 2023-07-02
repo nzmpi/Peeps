@@ -14,7 +14,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     uint256 constant MAX_MINT = 20;
     uint64 totalPeeps = 1;   
 
-    Peep[] public peeps;
+    Peep[] peeps;
 
     mapping(address => uint64[]) public ownedPeeps;
 
@@ -41,7 +41,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
         genes: genes,
         hasHat: 0,
         kidTime: kidTime,
-        adultTime:adultTime,
+        adultTime: adultTime,
         oldTime: oldTime,
         parents: empty,
         children: empty,
@@ -51,14 +51,18 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-      return PeepsMetadata.tokenURI(peeps[tokenId-1]);
+      return PeepsMetadata.tokenURI(peeps[tokenId-1], tokenId);
     }
 
-    function getAll(uint256 tokenId) public view returns (string[4] memory p) {
-      p[0] = PeepsMetadata.generatePeep(peeps[tokenId-1], 0);
-      p[1] = PeepsMetadata.generatePeep(peeps[tokenId-1], 1);
-      p[2] = PeepsMetadata.generatePeep(peeps[tokenId-1], 2);
-      p[3] = PeepsMetadata.generatePeep(peeps[tokenId-1], 3);
+    /*function getAll(uint256 tokenId) public view returns (string[4] memory p) {
+      p[0] = PeepsMetadata.generatePeep(peeps[tokenId-1], tokenId.toString(), 0);
+      p[1] = PeepsMetadata.generatePeep(peeps[tokenId-1], tokenId.toString(), 1);
+      p[2] = PeepsMetadata.generatePeep(peeps[tokenId-1], tokenId.toString(), 2);
+      p[3] = PeepsMetadata.generatePeep(peeps[tokenId-1], tokenId.toString(), 3);
+    }*/
+
+    function getPeeps() external view returns (Peep[] memory) {
+      return peeps;
     }
 
     function getRandomNumber() internal view returns (uint256) {

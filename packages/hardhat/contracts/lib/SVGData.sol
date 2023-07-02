@@ -47,6 +47,33 @@ library SVGData {
       ));
   }
 
+  function getAdultLegs() internal pure returns (string memory) {
+    return string(abi.encodePacked(
+      '<path d="M180 280, 180 360, 160 375" fill="none" stroke="black" stroke-width="5"/>',
+      '<path d="M215 280, 215 360, 235 375" fill="none" stroke="black" stroke-width="5"/>'));
+  }
+
+  function getAdultHead() internal pure returns (string memory) {
+    return 
+      '<ellipse cx="200" cy="90" rx="30" ry="40" fill="white" stroke="black"/>';
+  }
+
+  function getAdultEyes(uint256 color) internal pure returns (string memory) {
+    return string(abi.encodePacked(
+      '<circle cx="187" cy="80" r="5" fill="#',
+      SVGData.toColor(uint24(color)),
+      '" stroke="black"/>',
+      '<circle cx="210" cy="80" r="5" fill="#',
+      SVGData.toColor(uint24(color)),
+      '" stroke="black"/>'
+    ));
+  }
+
+  function getWrinkles() internal pure returns (string memory) {
+    return 
+      '<line x1="180" y1="77" x2="175" y2="75" stroke="black"/><line x1="180" y1="80" x2="175" y2="80" stroke="black"/><line x1="180" y1="83" x2="175" y2="85" stroke="black"/><line x1="217" y1="77" x2="222" y2="75" stroke="black"/><line x1="217" y1="80" x2="222" y2="80" stroke="black"/><line x1="217" y1="83" x2="222" y2="85" stroke="black"/>';
+  }
+
   function getKidArms(
     uint256 isLeftAnimated,
     uint256 isRightAnimated,
@@ -95,6 +122,7 @@ library SVGData {
     string memory dur;
     if (isOld) dur = "4s"; 
     else dur = "2s";
+
     if (isLeftAnimated == 0) {
       if (leftArm == 0) arms = 
         '<line x1="165" y1="130" x2="100" y2="240" stroke="black" stroke-width="5"/>';

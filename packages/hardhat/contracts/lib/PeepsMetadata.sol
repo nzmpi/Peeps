@@ -15,18 +15,19 @@ library PeepsMetadata {
   uint256 constant NUMBER_OF_MOUTHS = 6;
   uint256 constant NUMBER_OF_MOUSTACHE = 5;
   uint256 constant kidTime_MIN = 2 hours;
-  uint256 constant adultTime_MIN = 1 days;
+  uint256 constant adultTime_MIN = 2 weeks;
   uint256 constant oldTime_MIN = 10 hours;
 
-  function tokenURI(Peep storage peep) internal view returns (string memory) {
+  function tokenURI(Peep storage peep, uint256 id) internal view returns (string memory) {
     //string memory description = "This is a Peep!";
     //string memory image = Base64.encode(bytes(generatePeep(peep)));
 
     //return generateSVGTokenURI(peep.name, description, description, image);
-    return generatePeep(peep,0);
+    string memory idString = id.toString();
+    return generatePeep(peep,idString,0);
   }
 
-  function generatePeep(Peep storage peep, uint256 p) internal view returns (string memory) {
+  function generatePeep(Peep storage peep, string memory id, uint256 p) internal view returns (string memory) {
     string memory header = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">';
     string memory footer = '</svg>';
     //if (block.timestamp < peep.kidTime) {
@@ -39,7 +40,7 @@ library PeepsMetadata {
       //return string(abi.encodePacked(header,getDead(peep),footer));
     //}
     if (p == 0) return string(abi.encodePacked(header,getKid(peep),footer));
-    else if (p == 1) return string(abi.encodePacked(header,getAdult(peep),footer));
+    else if (p == 1) return string(abi.encodePacked(header,getAdult(peep, id),footer));
     else if (p == 2) return string(abi.encodePacked(header,getOld(peep),footer));
     else return string(abi.encodePacked(header,getDead(peep),footer));
   }
@@ -113,7 +114,7 @@ library PeepsMetadata {
     ));
 
     // mouth
-    genes /= 10;
+    genes /= 100;
     x1 = genes % NUMBER_OF_MOUTHS;
     svg = string(abi.encodePacked(svg,
       SVGData.getKidMouth(x1)
@@ -121,7 +122,7 @@ library PeepsMetadata {
 
   }
 
-  function getAdult(Peep storage peep) internal view returns (string memory svg) {
+  function getAdult(Peep storage peep, string memory id) internal view returns (string memory svg) {
     uint256 genes = peep.genes;    
     // avoiding 'Stack too deep' error
     uint256 x1;
@@ -129,18 +130,17 @@ library PeepsMetadata {
     uint256 x3;
     uint256 x4;
 
+    // background
     x1 = genes % NUMBER_OF_BACKGROUNDS;
     genes /= 10; // changing the number
     x2 = genes % MAX_COLOR;
     genes /= 10;
     x3 = genes % MAX_COLOR;
-    // background
     svg = SVGData.getBackground(x1, uint24(x2), uint24(x3));
 
     // legs
     svg = string(abi.encodePacked(svg,
-      '<path d="M180 280, 180 360, 160 375" fill="none" stroke="black" stroke-width="5"/>',
-      '<path d="M215 280, 215 360, 235 375" fill="none" stroke="black" stroke-width="5"/>'
+      SVGData.getAdultLegs()
     ));
 
     // arms
@@ -162,16 +162,20 @@ library PeepsMetadata {
     genes /= 10;
     x2 = genes % MAX_COLOR;
     svg = string(abi.encodePacked(svg,
-      '<defs><linearGradient id="gradient" gradientUnits="userSpaceOnUse" x1="150" y1="150" x2="250" y2="250"><stop offset="00%" stop-color="#',
+      '<defs><linearGradient id="',
+      id,
+      '" gradientUnits="userSpaceOnUse" x1="150" y1="150" x2="250" y2="250"><stop offset="0%" stop-color="#',
       SVGData.toColor(uint24(x1)),
       '"/><stop offset="120%" stop-color="#',
       SVGData.toColor(uint24(x2)),
-      '"/></linearGradient></defs><ellipse cx="200" cy="200" rx="60" ry="90" fill="url(#gradient)" stroke="black"/>'
+      '"/></linearGradient></defs><ellipse cx="200" cy="200" rx="60" ry="90" fill="url(#',
+      id,
+      ')" stroke="black"/>'
     ));
 
     // head
     svg = string(abi.encodePacked(svg,
-      '<ellipse cx="200" cy="90" rx="30" ry="40" fill="white" stroke="black"/>'
+      SVGData.getAdultHead()
     ));
 
     // eyebrows
@@ -185,12 +189,7 @@ library PeepsMetadata {
     genes /= 10;
     x1 = genes % MAX_COLOR;
     svg = string(abi.encodePacked(svg,
-      '<circle cx="187" cy="80" r="5" fill="#',
-      SVGData.toColor(uint24(x1)),
-      '" stroke="black"/>',
-      '<circle cx="210" cy="80" r="5" fill="#',
-      SVGData.toColor(uint24(x1)),
-      '" stroke="black"/>'
+      SVGData.getAdultEyes(x1)
     ));
 
     // moustache
@@ -227,8 +226,7 @@ library PeepsMetadata {
 
     // legs
     svg = string(abi.encodePacked(svg,
-      '<path d="M180 280, 180 360, 160 375" fill="none" stroke="black" stroke-width="5"/>',
-      '<path d="M215 280, 215 360, 235 375" fill="none" stroke="black" stroke-width="5"/>'
+      SVGData.getAdultLegs()
     ));
 
     // arms
@@ -255,7 +253,7 @@ library PeepsMetadata {
 
     // head
     svg = string(abi.encodePacked(svg,
-      '<ellipse cx="200" cy="90" rx="30" ry="40" fill="white" stroke="black"/>'
+      SVGData.getAdultHead()
     ));
 
     // eyebrows
@@ -269,17 +267,12 @@ library PeepsMetadata {
     genes /= 10;
     x1 = genes % MAX_COLOR;
     svg = string(abi.encodePacked(svg,
-      '<circle cx="187" cy="80" r="5" fill="#',
-      SVGData.toColor(uint24(x1)),
-      '" stroke="black"/>',
-      '<circle cx="210" cy="80" r="5" fill="#',
-      SVGData.toColor(uint24(x1)),
-      '" stroke="black"/>'
+      SVGData.getAdultEyes(x1)
     ));
 
     // wrinkles
     svg = string(abi.encodePacked(svg,
-      '<line x1="180" y1="77" x2="175" y2="75" stroke="black"/><line x1="180" y1="80" x2="175" y2="80" stroke="black"/><line x1="180" y1="83" x2="175" y2="85" stroke="black"/><line x1="217" y1="77" x2="222" y2="75" stroke="black"/><line x1="217" y1="80" x2="222" y2="80" stroke="black"/><line x1="217" y1="83" x2="222" y2="85" stroke="black"/>'
+      SVGData.getWrinkles()
     ));
 
     // moustache
@@ -316,8 +309,7 @@ library PeepsMetadata {
 
     // legs
     svg = string(abi.encodePacked(svg,
-      '<path d="M180 280, 180 360, 160 375" fill="none" stroke="black" stroke-width="5"/>',
-      '<path d="M215 280, 215 360, 235 375" fill="none" stroke="black" stroke-width="5"/>'
+      SVGData.getAdultLegs()
     ));
 
     // arms
@@ -336,7 +328,7 @@ library PeepsMetadata {
 
     // head
     svg = string(abi.encodePacked(svg,
-      '<ellipse cx="200" cy="90" rx="30" ry="40" fill="white" stroke="black"/>'
+      SVGData.getAdultHead()
     ));
 
     // eyebrows
@@ -353,7 +345,7 @@ library PeepsMetadata {
 
     // wrinkles
     svg = string(abi.encodePacked(svg,
-      '<line x1="180" y1="77" x2="175" y2="75" stroke="black"/><line x1="180" y1="80" x2="175" y2="80" stroke="black"/><line x1="180" y1="83" x2="175" y2="85" stroke="black"/><line x1="217" y1="77" x2="222" y2="75" stroke="black"/><line x1="217" y1="80" x2="222" y2="80" stroke="black"/><line x1="217" y1="83" x2="222" y2="85" stroke="black"/>'
+      SVGData.getWrinkles()
     ));
 
     // moustache

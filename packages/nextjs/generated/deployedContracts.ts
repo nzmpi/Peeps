@@ -5,7 +5,7 @@ const contracts = {
       name: "localhost",
       contracts: {
         Peeps: {
-          address: "0x95401dc811bb5740090279Ba06cfA8fcF6113778",
+          address: "0xf5059a5D33d5853360D16C683c16e67980206f36",
           abi: [
             {
               inputs: [],
@@ -144,31 +144,72 @@ const contracts = {
                   type: "uint256",
                 },
               ],
-              name: "getAll",
-              outputs: [
-                {
-                  internalType: "string[4]",
-                  name: "p",
-                  type: "string[4]",
-                },
-              ],
-              stateMutability: "view",
-              type: "function",
-            },
-            {
-              inputs: [
-                {
-                  internalType: "uint256",
-                  name: "tokenId",
-                  type: "uint256",
-                },
-              ],
               name: "getApproved",
               outputs: [
                 {
                   internalType: "address",
                   name: "",
                   type: "address",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "getPeeps",
+              outputs: [
+                {
+                  components: [
+                    {
+                      internalType: "uint256",
+                      name: "genes",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint8",
+                      name: "hasHat",
+                      type: "uint8",
+                    },
+                    {
+                      internalType: "uint32",
+                      name: "kidTime",
+                      type: "uint32",
+                    },
+                    {
+                      internalType: "uint32",
+                      name: "adultTime",
+                      type: "uint32",
+                    },
+                    {
+                      internalType: "uint32",
+                      name: "oldTime",
+                      type: "uint32",
+                    },
+                    {
+                      internalType: "uint64[]",
+                      name: "parents",
+                      type: "uint64[]",
+                    },
+                    {
+                      internalType: "uint64[]",
+                      name: "children",
+                      type: "uint64[]",
+                    },
+                    {
+                      internalType: "uint64[]",
+                      name: "grandChildren",
+                      type: "uint64[]",
+                    },
+                    {
+                      internalType: "string",
+                      name: "name",
+                      type: "string",
+                    },
+                  ],
+                  internalType: "struct Peep[]",
+                  name: "",
+                  type: "tuple[]",
                 },
               ],
               stateMutability: "view",
@@ -269,50 +310,6 @@ const contracts = {
                   internalType: "address",
                   name: "",
                   type: "address",
-                },
-              ],
-              stateMutability: "view",
-              type: "function",
-            },
-            {
-              inputs: [
-                {
-                  internalType: "uint256",
-                  name: "",
-                  type: "uint256",
-                },
-              ],
-              name: "peeps",
-              outputs: [
-                {
-                  internalType: "uint256",
-                  name: "genes",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint8",
-                  name: "hasHat",
-                  type: "uint8",
-                },
-                {
-                  internalType: "uint32",
-                  name: "kidTime",
-                  type: "uint32",
-                },
-                {
-                  internalType: "uint32",
-                  name: "adultTime",
-                  type: "uint32",
-                },
-                {
-                  internalType: "uint32",
-                  name: "oldTime",
-                  type: "uint32",
-                },
-                {
-                  internalType: "string",
-                  name: "name",
-                  type: "string",
                 },
               ],
               stateMutability: "view",
