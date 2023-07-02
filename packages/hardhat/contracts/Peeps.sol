@@ -44,7 +44,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
 
       ownedPeeps[msg.sender].push(uint64(id));
       peeps.push(Peep({
-        genes: 1068959084166317779931468101505593319477978013254728142422900659567408100000,
+        genes: genes,
         hasHat: 0,
         breedCount: 0,
         bodyColor1: uint24(bodyColor1),
