@@ -26,12 +26,12 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
 
     function mint() external payable {
       uint256 index = checkMint();
-      if (msg.value < mintingFee) revert Errors.NotAllowed();
+      if (msg.value != mintingFee) revert Errors.NotEnoughEth();
       uint256 id = totalPeeps;
       ++totalPeeps;
       mintedPeeps[index] = uint64(id);
       uint64[] memory empty = new uint64[](0);
-      uint256 genes = getRandomNumber();
+      uint256 genes = getRandomNumber(id);
       uint256 bodyColor1 = genes % MAX_COLOR;
       genes /= 10;
       uint256 bodyColor2 = genes % MAX_COLOR;
@@ -61,6 +61,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       }));
 
       _safeMint(msg.sender, id);
+      emit Events.Mint(msg.sender, id);
     }
 
     function checkMint() internal view returns (uint256) {
@@ -87,34 +88,56 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       Peep storage peep = peeps[tokenId-1];
       if (peep.kidTime < block.timestamp) revert Errors.NotAllowed();
       peep.peepName = newName;
+      emit Events.NameChanged(tokenId, newName);
     }
 
     function breed(uint256 tokenId1, uint256 tokenId2) external payable {
       if (tokenId1 == tokenId2) revert Errors.WrongPeep();
-      if (msg.value < breedingFee) revert Errors.NotAllowed();
+      uint256 fee = breedingFee;
+      if (msg.value != fee) revert Errors.NotEnoughEth();
       if (!isBreedable(tokenId1)) revert Errors.NotAllowed();
       if (!isBreedable(tokenId2)) revert Errors.NotAllowed();
+      address ownerOfPeep = _ownerOf(tokenId1);
+      uint256 lockedFunds_ = fee*30/100;
+      if (ownerOfPeep != msg.sender) {
+        funds[ownerOfPeep] += lockedFunds_;
+        lockedFunds += lockedFunds_;
+      }
+      ownerOfPeep = _ownerOf(tokenId2);
+      if (ownerOfPeep != msg.sender) {
+        funds[ownerOfPeep] += lockedFunds_;
+        lockedFunds += lockedFunds_;
+      }
 
       Peep storage peep1 = peeps[tokenId1-1];
       Peep storage peep2 = peeps[tokenId2-1];
       ++peep1.breedCount;
-      ++peep2.breedCount;      
-      if (checkForTwins(peep1, peep2)) {
-        createKid(tokenId1, peep1, tokenId2, peep2);
-        createKid(tokenId2, peep2, tokenId1, peep1);
+      ++peep2.breedCount;
+      bool areTwins = checkForTwins(peep1, peep2);   
+      uint256 kid1;
+      uint256 kid2;   
+      if (areTwins) {
+        kid1 = createKid(tokenId1, peep1, tokenId2, peep2);
+        kid2 = createKid(tokenId2, peep2, tokenId1, peep1);
       } else {
-        createKid(tokenId1, peep1, tokenId2, peep2);
+        kid1 = createKid(tokenId1, peep1, tokenId2, peep2);
       }
+
+      if (areTwins) {
+        emit Events.Breed(tokenId1, tokenId2, kid1);
+        emit Events.Breed(tokenId1, tokenId2, kid2);
+      } else 
+        emit Events.Breed(tokenId1, tokenId2, kid1);      
     }
 
-    function createKid(uint256 tokenId1, Peep storage peep1, uint256 tokenId2, Peep storage peep2) internal {
-      uint256 id = totalPeeps;
+    function createKid(uint256 tokenId1, Peep storage peep1, uint256 tokenId2, Peep storage peep2) internal returns (uint256 id) {
+      id = totalPeeps;
       ++totalPeeps;
       uint64[] memory parents = new uint64[](2);
       parents[0] = uint64(tokenId1);
       parents[1] = uint64(tokenId2);
       uint64[] memory empty = new uint64[](0);
-      uint256 genes = getRandomNumber();
+      uint256 genes = getRandomNumber(id);
       uint24 bodyColor1;
       uint24 bodyColor2;
       uint24 eyesColor;
@@ -166,11 +189,11 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       else return false;
     }
 
-    function allowBreeding(uint256 tokenId) external {
-      if (breedingAllowed[tokenId]) revert Errors.NotAllowed();
+    function toggleBreeding(uint256 tokenId) external {
       if (!_isApprovedOrOwner(msg.sender, tokenId)) 
         revert Errors.NotAllowed();
-      breedingAllowed[tokenId] = true;
+      breedingAllowed[tokenId] = !breedingAllowed[tokenId];
+      emit Events.BreedingChanged(tokenId);
     }
 
     function isBreedable(uint256 tokenId) internal view returns (bool) {
@@ -195,7 +218,8 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       ) revert Errors.NotAllowed();
       if (!isGrandKid(giverId, receiverId)) revert Errors.WrongPeep();
       Peep storage grandKid = peeps[receiverId-1];
-      grandKid.hasHat = uint24(getRandomNumber() % MAX_COLOR);
+      grandKid.hasHat = uint24(getRandomNumber(giverId) % MAX_COLOR);
+      emit Events.GiftHat(giverId, receiverId);
     }
 
     function isGrandKid(
@@ -219,6 +243,15 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       return false;
     }
 
+    function withdrawFunds() external {
+      uint256 funds_ = funds[msg.sender];
+      if (funds_ == 0) revert Errors.NotEnoughEth();
+      delete funds[msg.sender];
+      lockedFunds -= funds_;
+      (bool s,) = msg.sender.call{value: funds_}("");
+      if (!s) revert();
+    }
+
     function getPeeps() external view returns (Peep[] memory) {
       return peeps;
     }
@@ -231,14 +264,13 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       return mintedPeeps;
     }
 
-    function getRandomNumber() internal view returns (uint256) {
-    return block.prevrandao;
-    /*return uint256(keccak256(abi.encode(
-        block.timestamp, 
-        blockhash(block.number - 1), 
-        msg.sender, 
-        address(this)
-    )));*/
+    function getRandomNumber(uint256 tokenId) internal view returns (uint256) {
+    return uint256(keccak256(abi.encode(
+      block.prevrandao, 
+      tokenId,
+      msg.sender,
+      address(this)
+    )));
     }
 
     function getPeepsMetadata() external view returns (address) {

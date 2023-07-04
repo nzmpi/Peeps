@@ -5,7 +5,7 @@ const contracts = {
       name: "localhost",
       contracts: {
         Peeps: {
-          address: "0x5f3f1dBD7B74C6B46e8c44f98792A1dAf8d69154",
+          address: "0x1fA02b2d6A771842690194Cf62D91bdd92BfE28d",
           abi: [
             {
               inputs: [],
@@ -15,6 +15,11 @@ const contracts = {
             {
               inputs: [],
               name: "NotAllowed",
+              type: "error",
+            },
+            {
+              inputs: [],
+              name: "NotEnoughEth",
               type: "error",
             },
             {
@@ -82,6 +87,153 @@ const contracts = {
               inputs: [
                 {
                   indexed: true,
+                  internalType: "uint256",
+                  name: "peep1",
+                  type: "uint256",
+                },
+                {
+                  indexed: true,
+                  internalType: "uint256",
+                  name: "peep2",
+                  type: "uint256",
+                },
+                {
+                  indexed: true,
+                  internalType: "uint256",
+                  name: "kid",
+                  type: "uint256",
+                },
+              ],
+              name: "Breed",
+              type: "event",
+            },
+            {
+              anonymous: false,
+              inputs: [
+                {
+                  indexed: true,
+                  internalType: "uint256",
+                  name: "tokenId",
+                  type: "uint256",
+                },
+              ],
+              name: "BreedingChanged",
+              type: "event",
+            },
+            {
+              anonymous: false,
+              inputs: [
+                {
+                  indexed: false,
+                  internalType: "uint256",
+                  name: "newFee",
+                  type: "uint256",
+                },
+              ],
+              name: "BreedingFeeChanged",
+              type: "event",
+            },
+            {
+              anonymous: false,
+              inputs: [
+                {
+                  indexed: true,
+                  internalType: "uint256",
+                  name: "giver",
+                  type: "uint256",
+                },
+                {
+                  indexed: true,
+                  internalType: "uint256",
+                  name: "receiver",
+                  type: "uint256",
+                },
+              ],
+              name: "GiftHat",
+              type: "event",
+            },
+            {
+              anonymous: false,
+              inputs: [
+                {
+                  indexed: true,
+                  internalType: "address",
+                  name: "minter",
+                  type: "address",
+                },
+                {
+                  indexed: true,
+                  internalType: "uint256",
+                  name: "tokenId",
+                  type: "uint256",
+                },
+              ],
+              name: "Mint",
+              type: "event",
+            },
+            {
+              anonymous: false,
+              inputs: [
+                {
+                  indexed: false,
+                  internalType: "uint256",
+                  name: "newFee",
+                  type: "uint256",
+                },
+              ],
+              name: "MintingFeeChanged",
+              type: "event",
+            },
+            {
+              anonymous: false,
+              inputs: [
+                {
+                  indexed: true,
+                  internalType: "uint256",
+                  name: "tokenId",
+                  type: "uint256",
+                },
+                {
+                  indexed: false,
+                  internalType: "string",
+                  name: "newName",
+                  type: "string",
+                },
+              ],
+              name: "NameChanged",
+              type: "event",
+            },
+            {
+              anonymous: false,
+              inputs: [
+                {
+                  indexed: true,
+                  internalType: "address",
+                  name: "newOwner",
+                  type: "address",
+                },
+              ],
+              name: "OwnerProposed",
+              type: "event",
+            },
+            {
+              anonymous: false,
+              inputs: [
+                {
+                  indexed: true,
+                  internalType: "address",
+                  name: "newOwner",
+                  type: "address",
+                },
+              ],
+              name: "OwnershipAccepted",
+              type: "event",
+            },
+            {
+              anonymous: false,
+              inputs: [
+                {
+                  indexed: true,
                   internalType: "address",
                   name: "from",
                   type: "address",
@@ -105,19 +257,6 @@ const contracts = {
             {
               inputs: [],
               name: "acceptOwnership",
-              outputs: [],
-              stateMutability: "nonpayable",
-              type: "function",
-            },
-            {
-              inputs: [
-                {
-                  internalType: "uint256",
-                  name: "tokenId",
-                  type: "uint256",
-                },
-              ],
-              name: "allowBreeding",
               outputs: [],
               stateMutability: "nonpayable",
               type: "function",
@@ -256,6 +395,25 @@ const contracts = {
             {
               inputs: [
                 {
+                  internalType: "address",
+                  name: "",
+                  type: "address",
+                },
+              ],
+              name: "funds",
+              outputs: [
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
                   internalType: "uint256",
                   name: "tokenId",
                   type: "uint256",
@@ -274,7 +432,7 @@ const contracts = {
             },
             {
               inputs: [],
-              name: "getMPs",
+              name: "getMintedPeeps",
               outputs: [
                 {
                   internalType: "uint64[20]",
@@ -456,13 +614,6 @@ const contracts = {
             },
             {
               inputs: [],
-              name: "mint20",
-              outputs: [],
-              stateMutability: "payable",
-              type: "function",
-            },
-            {
-              inputs: [],
               name: "mintingFee",
               outputs: [
                 {
@@ -536,7 +687,7 @@ const contracts = {
               inputs: [
                 {
                   internalType: "address",
-                  name: "_newOwner",
+                  name: "newOwner",
                   type: "address",
                 },
               ],
@@ -654,6 +805,19 @@ const contracts = {
                   type: "uint256",
                 },
               ],
+              name: "toggleBreeding",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "uint256",
+                  name: "tokenId",
+                  type: "uint256",
+                },
+              ],
               name: "tokenURI",
               outputs: [
                 {
@@ -704,6 +868,13 @@ const contracts = {
             {
               inputs: [],
               name: "withdraw",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "withdrawFunds",
               outputs: [],
               stateMutability: "nonpayable",
               type: "function",

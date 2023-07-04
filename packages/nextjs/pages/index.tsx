@@ -10,9 +10,18 @@ import {
 } from "~~/hooks/scaffold-eth";
 import { useAccount, useProvider } from 'wagmi';
 
+interface Metadata {
+  name: string,
+  image: string
+}
+
 const Home: NextPage = () => {
+  const [metadata, setMetadata] = useState<Metadata>()
   const [svgData, setSvgData] = useState([{svg: "", name: ""}]);
   const [usersSVG, setUsersSVG] = useState([{svg: "", name: ""}]);
+  const [tokenId, setTokenId] = useState(BigNumber.from(1));
+  const [check, setCheck] = useState<any>();
+  const [attrib, setAttrib] = useState<any>();
 
   const svgContainerStyles = {
     display: 'inline-block',
@@ -40,6 +49,16 @@ const Home: NextPage = () => {
     
     (async () => {
       const peeps = new ethers.Contract(peepsContract?.address || "", peepsContract?.abi || "", provider)
+
+      const tokenURI = await peeps.tokenURI(tokenId);
+      const encodedData = tokenURI.split(',')[1];
+      const decodedData = Buffer.from(encodedData, 'base64').toString('utf-8');
+      const jsonData = JSON.parse(decodedData);
+      setAttrib(decodedData);
+      const encodedImage = jsonData.image.split(',')[1];
+      const decodedImage = Buffer.from(encodedImage, 'base64').toString('utf-8');
+      setCheck(decodedImage);
+
       let svgs = [];
       let len = 1;
       if (Peeps) len = Peeps?.length; 
@@ -81,16 +100,54 @@ const Home: NextPage = () => {
     </div>);
   }
 
+  const getCheck = () => {
+    return (
+    <div>
+    <div style={svgContainerStyles}>      
+      <div 
+        dangerouslySetInnerHTML={{ __html: check }}
+        style={{ width: 200, height: 290 }}
+      />
+    </div>
+    </div>);
+  }
+
+  const getJson = () => {
+    if (attrib)
+    return (
+    <div>
+      <div style={svgContainerStyles}>      
+      <div 
+
+        style={{ width: 200, height: 290 }}
+      >
+        {attrib}
+      </div>
+    </div>
+    </div>);
+  }
+
+  useEffect(() => {
+    //getDetails();
+  }, [isLoadingPeepsContract, Peeps])
+
   return (
     <>
       <MetaHeader />
       <div className="flex items-center flex-col flex-grow pt-10">
-      {Peeps?.toString()}
+
+        <div className="flex items-center flex-raw flex-grow"> 
+        <div>          
+          {getJson()}
+        </div>
+        </div>
+
         <div className="flex items-center flex-raw flex-grow">    
         <div>
           Time now: {Time?.toString() || ""}
+          
           {svgData.map((data) => (
-            getSVG(data)        
+            getCheck()       
           ))}
         </div>
         </div>

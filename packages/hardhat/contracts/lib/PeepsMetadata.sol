@@ -14,17 +14,159 @@ contract PeepsMetadata {
   uint256 constant NUMBER_OF_EYEBROWS = 3;
   uint256 constant NUMBER_OF_MOUTHS = 6;
   uint256 constant NUMBER_OF_MOUSTACHE = 5;
+  uint256 constant NUMBER_OF_HATS = 3;
   uint256 constant kidTime_MIN = 1 minutes;//2 hours;
   uint256 constant adultTime_MIN = 1 minutes;//2 weeks;
   uint256 constant oldTime_MIN = 1 minutes;//10 hours;
 
   function tokenURI(Peep calldata peep, uint256 id) external view returns (string memory) {
-    //string memory description = "This is a Peep!";
-    //string memory image = Base64.encode(bytes(generatePeep(peep)));
+    string memory description = "This is a Peep!";
+    string memory attributes = getAttributes(peep);
+    string memory image = Base64.encode(bytes(
+      generatePeep(peep, id.toString()
+    )));
 
-    //return generateSVGTokenURI(peep.name, description, description, image);
-    string memory idString = id.toString();
-    return generatePeep(peep,idString);
+    return generateSVGTokenURI(peep.peepName, description, image, attributes);
+  }
+
+  function getAttributes(Peep calldata peep) internal pure returns (string memory attributes) {
+    uint256 genes = peep.genes;
+    uint256 x1;
+    uint256 x2;
+    uint256 x3;
+
+    attributes = string(abi.encodePacked(attributes,
+      '[{"trait_type": "Adulthood", "value": "',
+      uint256(peep.kidTime).toString(),
+      '"},'
+    ));
+
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Old age", "value": "',
+      uint256(peep.adultTime).toString(),
+      '"},'
+    ));
+
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Death", "value": "',
+      uint256(peep.oldTime).toString(),
+      '"},'
+    ));
+
+    // background
+    x1 = genes % NUMBER_OF_BACKGROUNDS;
+    genes /= 10;
+    x2 = genes % MAX_COLOR;
+    genes /= 10;
+    x3 = genes % MAX_COLOR;
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Background type", "value": "',
+      x1.toString(),
+      '"},'
+    ));
+
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Background color 1", "value": "#',
+      SVGData.toColor(uint24(x2)),
+      '"},'
+    ));
+
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Background color 2", "value": "#',
+      SVGData.toColor(uint24(x3)),
+      '"},'
+    ));
+
+    // arms
+    genes /= 10;
+    x1 = genes % 2;
+    genes /= 10;
+    x2 = genes % 2;
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Is left arm animated", "value": "',
+      boolToString(x1),
+      '"},'
+    ));
+
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Is right arm animated", "value": "',
+      boolToString(x2),
+      '"},'
+    ));
+
+    genes /= 10;
+    x1 = genes % NUMBER_OF_ARMS;
+    genes /= 10;
+    x2 = genes % NUMBER_OF_ARMS;
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Left arm type", "value": "',
+      x1.toString(),
+      '"},'
+    ));
+
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Right arm type", "value": "',
+      x2.toString(),
+      '"},'
+    ));
+
+    // body colors
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Body color 1", "value": "#',
+      SVGData.toColor(peep.bodyColor1),
+      '"},'
+    ));
+
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Body color 2", "value": "#',
+      SVGData.toColor(peep.bodyColor2),
+      '"},'
+    ));
+
+    // eyebrows
+    genes /= 10;
+    x1 = genes % NUMBER_OF_EYEBROWS;
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Eyebrows type", "value": "',
+      x1.toString(),
+      '"},'
+    ));
+
+    // eyes
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Eye color", "value": "#',
+      SVGData.toColor(peep.eyesColor),
+      '"},'
+    ));
+
+    // moustache
+    genes /= 10;
+    x1 = genes % NUMBER_OF_MOUSTACHE;
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Moustache type", "value": "',
+      x1.toString(),
+      '"},'
+    ));
+
+    // mouth
+    genes /= 10;
+    x1 = genes % NUMBER_OF_MOUTHS;
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Mouth type", "value": "',
+      x1.toString(),
+      '"},'
+    ));
+
+    // hat
+    attributes = string(abi.encodePacked(attributes,
+      '{"trait_type": "Hat type", "value": "',
+      getHat(peep.hasHat),
+      '"}'
+    ));
+
+    attributes = string(abi.encodePacked(attributes,
+      ']'
+    ));
   }
 
   function generatePeep(Peep calldata peep, string memory id) internal view returns (string memory) {
@@ -364,11 +506,11 @@ contract PeepsMetadata {
   }
 
   function generateSVGTokenURI(
-    string storage name,
+    string memory name,
     string memory description,
     string memory image,
     string memory attributes
-  )internal pure returns (string memory) {
+  ) internal pure returns (string memory) {
     return
       string(
         abi.encodePacked(
@@ -384,7 +526,7 @@ contract PeepsMetadata {
                 image,
                 '", "attributes": ',
                 attributes,
-                "}"
+                '}'
               )
             )
           )
@@ -396,9 +538,26 @@ contract PeepsMetadata {
     uint32 kidTime,
     uint32 adultTime,
     uint32 oldTime
-    ) {
+  ) {
       kidTime = uint32(genes % kidTime_MIN + block.timestamp + kidTime_MIN);
       adultTime = uint32(genes % adultTime_MIN + adultTime_MIN) + kidTime;
       oldTime = uint32(genes % oldTime_MIN + oldTime_MIN) + adultTime;
+  }
+
+  function boolToString(uint256 _bool) internal pure returns (string memory) {
+    if (_bool == 0) return 'no';
+    else return 'yes';
+  }
+
+  function getHat(uint256 hat) internal pure returns (string memory attributes) {
+    if (hat == 0) return 'none';
+    else {
+      return string(abi.encodePacked(  
+      (hat % NUMBER_OF_HATS).toString(),
+      '"},',
+      '{"trait_type": "Hat color", "value": "#',
+      SVGData.toColor(uint24(hat))
+      ));
     }
+  }
 }

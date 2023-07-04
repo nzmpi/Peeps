@@ -5,4 +5,5 @@ library Errors {
     error NotOwner();
     error NotAllowed();
     error WrongPeep();
+    error NotEnoughEth();
 }
