@@ -3,6 +3,7 @@ pragma solidity 0.8.20;
 
 library SVGData {
   bytes16 internal constant ALPHABET = '0123456789abcdef';
+  uint256 constant NUMBER_OF_HATS = 3;
 
   function getBackground(
     uint256 background,
@@ -58,13 +59,14 @@ library SVGData {
       '<ellipse cx="200" cy="90" rx="30" ry="40" fill="white" stroke="black"/>';
   }
 
-  function getAdultEyes(uint256 color) internal pure returns (string memory) {
+  function getAdultEyes(uint256 eyeColor) internal pure returns (string memory) {
+    string memory color = toColor(uint24(eyeColor));
     return string(abi.encodePacked(
       '<circle cx="187" cy="80" r="5" fill="#',
-      toColor(uint24(color)),
+      color,
       '" stroke="black"/>',
       '<circle cx="210" cy="80" r="5" fill="#',
-      toColor(uint24(color)),
+      color,
       '" stroke="black"/>'
     ));
   }
@@ -226,6 +228,50 @@ library SVGData {
       '<path d="M190 110, 191 106, 192 104, 195 101, 198 99, 200 99, 202 99, 207 101, 209 104, 209 107, 210 110 z" fill="black" stroke="black"/><path d="M190 110 Q 210 95 210 110 z" fill="red" stroke="black"/>';
     else return 
       '<path d="M190 102, 191 106, 192 108, 195 112, 198 113, 200 113, 202 113, 207 111, 209 107, 210 102 z" fill="black" stroke="black"/><path d="M192 108, 195 112, 198 113, 200 113, 202 113, 205 112, 207 111, 209 107, 204 106, 203 106, 202 106, 201 106, 200 106" fill="red"/>';
+  }
+
+  function getKidHat(uint256 hat) internal pure returns (string memory) {
+    if (hat == 0) return '';
+    uint256 hatType = hat % NUMBER_OF_HATS;
+    string memory color = toColor(uint24(hat));
+    if (hatType == 0) return string(abi.encodePacked(
+      '<ellipse cx="200" cy="127" rx="24" ry="5" fill="#',
+      color,
+      '" stroke="black"/><path d="M185 126 A80 800 0 0 1 215 126" fill="#',
+      color,
+      '" stroke="black"/>'));
+    else if (hatType == 1) return string(abi.encodePacked(
+      '<ellipse cx="200" cy="127" rx="10" ry="5" fill="#',
+      color,
+      '" stroke="black"/><path d="M195 127 195 112 200 120 205 112 205 127" fill="#',
+      color,
+      '" stroke="black"/>'));
+    else return string(abi.encodePacked(
+      '<path d="M187 131, 191 122, 196 117, 200 116, 203 116, 208 118, 215 121, 225 127, 228 135, 228 143, 226 143, 224 142, 220 139, 217 135, 210 130, 205 129, 197 128 187 131" fill="#',
+      color,
+      '" stroke="black"/>'));
+  }
+
+  function getAdultHat(uint256 hat) internal pure returns (string memory) {
+    if (hat == 0) return '';
+    uint256 hatType = hat % NUMBER_OF_HATS;
+    string memory color = toColor(uint24(hat));
+    if (hatType == 0) return string(abi.encodePacked(
+      '<ellipse cx="200" cy="55" rx="50" ry="10" fill="#',
+      color,
+      '" stroke="black"/><path d="M170 53 A120 900 0 0 1 230 53" fill="#',
+      color,
+      '" stroke="black"/>'));
+    else if (hatType == 1) return string(abi.encodePacked(
+      '<ellipse cx="200" cy="55" rx="20" ry="10" fill="#',
+      color,
+      '" stroke="black"/><path d="M190 53 190 20 200 40 210 20 210 53" fill="#',
+      color,
+      '" stroke="black"/>'));
+    else return string(abi.encodePacked(
+      '<path d="M175 63, 180 55, 185 47, 187 45, 190 43, 195 40, 200 40, 205 41, 210 42, 215 43, 240 53, 245 56, 253 65, 255 69, 257 80, 255 85, 250 85, 240 80, 235 75, 230 70, 225 67, 210 61, 200 60, 175 63" fill="#',
+      color,
+      '" stroke="black"/>'));
   }
 
   function toColor(uint24 color) internal pure returns (string memory) {

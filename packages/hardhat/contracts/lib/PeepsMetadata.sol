@@ -96,12 +96,13 @@ contract PeepsMetadata {
     ));
 
     // eyes
+    string memory color = SVGData.toColor(peep.eyesColor);
     svg = string(abi.encodePacked(svg,
       '<circle cx="193" cy="141" r="2" fill="#',
-      SVGData.toColor(peep.eyesColor),
+      color,
       '" stroke="black"/>',
       '<circle cx="205" cy="141" r="2" fill="#',
-      SVGData.toColor(peep.eyesColor),
+      color,
       '" stroke="black"/>'
     ));
 
@@ -112,6 +113,10 @@ contract PeepsMetadata {
       SVGData.getKidMouth(x1)
     ));
 
+    // hat
+    svg = string(abi.encodePacked(svg,
+      SVGData.getKidHat(peep.hasHat)
+    ));
   }
 
   function getAdult(Peep calldata peep, string memory id) internal pure returns (string memory svg) {
@@ -192,6 +197,10 @@ contract PeepsMetadata {
       SVGData.getAdultMouth(x1)
     ));
 
+    // hat
+    svg = string(abi.encodePacked(svg,
+      SVGData.getAdultHat(peep.hasHat)
+    ));
   }
 
   function getOld(Peep calldata peep) internal pure returns (string memory svg) {
@@ -271,6 +280,10 @@ contract PeepsMetadata {
       SVGData.getAdultMouth(x1)
     ));
 
+    // hat
+    svg = string(abi.encodePacked(svg,
+      SVGData.getAdultHat(peep.hasHat)
+    ));
   }
 
   function getDead(Peep calldata peep) internal pure returns (string memory svg) {
@@ -344,6 +357,10 @@ contract PeepsMetadata {
       SVGData.getAdultMouth(x1)
     ));
 
+    // hat
+    svg = string(abi.encodePacked(svg,
+      SVGData.getAdultHat(peep.hasHat)
+    ));
   }
 
   function generateSVGTokenURI(

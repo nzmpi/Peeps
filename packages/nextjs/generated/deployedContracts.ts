@@ -5,7 +5,7 @@ const contracts = {
       name: "localhost",
       contracts: {
         Peeps: {
-          address: "0x36b58F5C1969B7b6591D752ea6F5486D069010AB",
+          address: "0x5f3f1dBD7B74C6B46e8c44f98792A1dAf8d69154",
           abi: [
             {
               inputs: [],
@@ -178,6 +178,25 @@ const contracts = {
               type: "function",
             },
             {
+              inputs: [
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256",
+                },
+              ],
+              name: "breedingAllowed",
+              outputs: [
+                {
+                  internalType: "bool",
+                  name: "",
+                  type: "bool",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
               inputs: [],
               name: "breedingFee",
               outputs: [
@@ -254,6 +273,19 @@ const contracts = {
               type: "function",
             },
             {
+              inputs: [],
+              name: "getMPs",
+              outputs: [
+                {
+                  internalType: "uint64[20]",
+                  name: "",
+                  type: "uint64[20]",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
               inputs: [
                 {
                   internalType: "address",
@@ -284,9 +316,9 @@ const contracts = {
                       type: "uint256",
                     },
                     {
-                      internalType: "uint8",
+                      internalType: "uint24",
                       name: "hasHat",
-                      type: "uint8",
+                      type: "uint24",
                     },
                     {
                       internalType: "uint8",
@@ -376,6 +408,24 @@ const contracts = {
             {
               inputs: [
                 {
+                  internalType: "uint256",
+                  name: "giverId",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "receiverId",
+                  type: "uint256",
+                },
+              ],
+              name: "giftHat",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
                   internalType: "address",
                   name: "owner",
                   type: "address",
@@ -400,6 +450,13 @@ const contracts = {
             {
               inputs: [],
               name: "mint",
+              outputs: [],
+              stateMutability: "payable",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "mint20",
               outputs: [],
               stateMutability: "payable",
               type: "function",

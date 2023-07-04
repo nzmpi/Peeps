@@ -97,3 +97,12 @@ body
 <line x1="217" y1="77" x2="222" y2="75" stroke="black"/>
 <line x1="217" y1="80" x2="222" y2="80" stroke="black"/>
 <line x1="217" y1="83" x2="222" y2="85" stroke="black"/>
+
+///hats///
+<ellipse cx="200" cy="55" rx="50" ry="10" fill="#8c0033" stroke="black"/>
+<path d="M170 53 A120 900 0 0 1 230 53" fill="#8c0033" stroke="black"/>
+
+<ellipse cx="200" cy="55" rx="20" ry="10" fill="#8c0033" stroke="black"/>
+<path d="M190 53 190 20 200 40 210 20 210 53" fill="#8c0033" stroke="black"/>
+
+<path d="M175 63, 180 55, 185 47, 187 45, 190 43, 195 40, 200 40, 205 41, 210 42, 215 43, 240 53, 245 56, 253 65, 255 69, 257 80, 255 85, 250 85, 240 80, 235 75, 230 70, 225 67, 210 61, 200 60, 175 63" fill="#8c0033" stroke="black"/>

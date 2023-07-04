@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 
 struct Peep {
     uint256 genes;
-    uint8 hasHat;
+    uint24 hasHat;
     uint8 breedCount;
     uint24 bodyColor1;
     uint24 bodyColor2;

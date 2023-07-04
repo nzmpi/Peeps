@@ -11,25 +11,27 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     using Strings for uint256;
     uint256 constant MAX_MINT = 20;
     uint256 constant MAX_COLOR = type(uint24).max; // 0xffffff
-    uint64 totalPeeps = 1;
     PeepsMetadata immutable peepsMetadata;
 
+    uint64 totalPeeps = 1;
+    uint64[20] mintedPeeps;
     Peep[] peeps;
 
     mapping(address => uint64[]) ownedPeeps;
-    mapping(uint256 => bool) breedingAllowed; 
+    mapping(uint256 => bool) public breedingAllowed;
 
     constructor() payable {
       peepsMetadata = new PeepsMetadata();
     }
 
-    function mint() public payable {
-      if (totalPeeps > MAX_MINT) revert Errors.NotAllowed();
+    function mint() external payable {
+      uint256 index = checkMint();
       if (msg.value < mintingFee) revert Errors.NotAllowed();
       uint256 id = totalPeeps;
       ++totalPeeps;
+      mintedPeeps[index] = uint64(id);
       uint64[] memory empty = new uint64[](0);
-      uint256 genes = getRandomNumber(id);
+      uint256 genes = getRandomNumber();
       uint256 bodyColor1 = genes % MAX_COLOR;
       genes /= 10;
       uint256 bodyColor2 = genes % MAX_COLOR;
@@ -57,7 +59,22 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
         children: empty,
         peepName: defaultName
       }));
+
       _safeMint(msg.sender, id);
+    }
+
+    function checkMint() internal view returns (uint256) {
+      uint256 id;
+      for (uint256 i; i < MAX_MINT;) {
+        id = mintedPeeps[i];
+        if (id == 0) return i;
+        if (peeps[id-1].oldTime < block.timestamp) {
+          return i;
+        }
+        unchecked {++i;}
+      }
+
+      revert Errors.NotAllowed();
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
@@ -97,7 +114,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       parents[0] = uint64(tokenId1);
       parents[1] = uint64(tokenId2);
       uint64[] memory empty = new uint64[](0);
-      uint256 genes = getRandomNumber(id);
+      uint256 genes = getRandomNumber();
       uint24 bodyColor1;
       uint24 bodyColor2;
       uint24 eyesColor;
@@ -158,16 +175,48 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
 
     function isBreedable(uint256 tokenId) internal view returns (bool) {
       Peep storage peep = peeps[tokenId-1];
-      uint256 time = peep.adultTime;
       if (
         block.timestamp < peep.kidTime || 
-        time < block.timestamp
+        peep.adultTime < block.timestamp
       ) return false;
       if (peep.breedCount > 2) return false;
       return (
         breedingAllowed[tokenId] ||
         _isApprovedOrOwner(msg.sender, tokenId)
         );
+    }
+
+    function giftHat(uint256 giverId, uint256 receiverId) external {
+      if (!_isApprovedOrOwner(msg.sender, giverId)) revert Errors.NotOwner();
+      Peep storage grandPa = peeps[giverId-1];
+      if (
+        block.timestamp < grandPa.adultTime || 
+        grandPa.oldTime < block.timestamp
+      ) revert Errors.NotAllowed();
+      if (!isGrandKid(giverId, receiverId)) revert Errors.WrongPeep();
+      Peep storage grandKid = peeps[receiverId-1];
+      grandKid.hasHat = uint24(getRandomNumber() % MAX_COLOR);
+    }
+
+    function isGrandKid(
+      uint256 grandPaId, 
+      uint256 grandKidId
+    ) internal view returns (bool) {
+      Peep storage grandPa = peeps[grandPaId-1];
+      uint64[] storage kids = grandPa.children;
+      uint256 kidsLength = kids.length;
+      uint256 grandKidsLength;
+      uint64[] storage grandKids;
+      for (uint256 i; i < kidsLength;) {
+        grandKids = peeps[kids[i]-1].children;
+        grandKidsLength = grandKids.length;
+        for (uint256 j; j<grandKidsLength;) {
+          if (grandKids[j] == grandKidId) return true;
+          unchecked {++j;}
+        }
+        unchecked {++i;}
+      }
+      return false;
     }
 
     function getPeeps() external view returns (Peep[] memory) {
@@ -178,8 +227,12 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       return ownedPeeps[_owner];
     }
 
-    function getRandomNumber(uint256 tokenId) internal view returns (uint256) {
-    return uint256(keccak256(abi.encode(block.prevrandao, tokenId)));
+    function getMintedPeeps() external view returns (uint64[20] memory) {
+      return mintedPeeps;
+    }
+
+    function getRandomNumber() internal view returns (uint256) {
+    return block.prevrandao;
     /*return uint256(keccak256(abi.encode(
         block.timestamp, 
         blockhash(block.number - 1), 
