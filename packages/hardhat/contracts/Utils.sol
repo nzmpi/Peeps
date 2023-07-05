@@ -44,6 +44,15 @@ contract Utils {
         if (!s) revert();
     }
 
+    function withdrawFunds() external {
+      uint256 funds_ = funds[msg.sender];
+      if (funds_ == 0) revert Errors.NotEnoughEth();
+      delete funds[msg.sender];
+      lockedFunds -= funds_;
+      (bool s,) = msg.sender.call{value: funds_}("");
+      if (!s) revert();
+    }
+
     modifier onlyOwner() {
         if (msg.sender != owner) revert Errors.NotOwner();
         _;

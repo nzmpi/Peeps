@@ -21,10 +21,22 @@ const deployPeeps: DeployFunction = async function (hre: HardhatRuntimeEnvironme
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy("Peeps", {
+  await deploy("PeepsMetadata", {
     from: deployer,
     // Contract constructor arguments
     //args: [deployer],
+    log: true,
+    // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
+    // automatically mining the contract deployment transaction. There is no effect on live networks.
+    autoMine: true,
+  });
+
+  const peepsMetadataContract = await hre.ethers.getContract("PeepsMetadata", deployer);
+
+  await deploy("Peeps", {
+    from: deployer,
+    // Contract constructor arguments
+    args: [peepsMetadataContract.address],
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
     // automatically mining the contract deployment transaction. There is no effect on live networks.

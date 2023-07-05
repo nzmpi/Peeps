@@ -1,0 +1,54 @@
+///gravestone///
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">  
+  <rect width="250" height="15" x="80" y="350" fill="grey" stroke="black"/>
+  <path d="M80 350, 330 350, 310 340, 100 340 z" fill="grey" stroke="black"/>
+  <path d="M110 345, 300 345, 300 120, 270 120, 205 100, 140 120, 110 120 z" fill="grey" stroke="black"/>
+  <path d="M140 120 C210 40, 270 120, 270 120" fill="grey" stroke="black"/>
+</svg>
+
+///traits///
+<style>.trait { fill: black; font-family: serif; font-size: 16px; }</style>
+<style>.value { fill: black; font-family: serif; font-size: 13px; }</style>
+<text x="125" y="160" class="trait">
+Name: 
+</text>
+<text x="185" y="160" class="value">
+Peep #1
+</text>
+  
+<text x="125" y="190" class="trait">
+Owner:
+</text>
+<text x="190" y="190" class="value">
+0x02d...873
+</text>
+
+<text x="125" y="220" class="trait">
+Lifetime:
+</text>
+<text x="203" y="220" class="value">
+~ 20 h
+</text>
+
+<text x="125" y="250" class="trait">
+Kids:
+</text>
+<text x="175" y="250" class="value">
+1, 105, 4599 
+</text>
+
+<text x="125" y="280" class="trait">
+Grandkids:
+</text>
+<text x="215" y="280" class="value">
+1, 105, 4599 
+</text>
+
+///hats///
+<ellipse cx="210" cy="85" rx="50" ry="10" fill="#8c0033" stroke="black"/>
+<path d="M180 83 A120 900 0 0 1 240 83" fill="#8c0033" stroke="black"/>
+
+<ellipse cx="210" cy="85" rx="20" ry="10" fill="#8c0033" stroke="black"/>
+<path d="M200 83 200 50 210 70 220 50 220 83" fill="#8c0033" stroke="black"/>
+
+<path d="M175 93, 180 85, 185 77, 187 75, 190 73, 195 70, 200 70, 205 71, 210 72, 215 73, 240 83, 245 86, 253 95, 255 99, 257 110, 255 115, 250 115, 240 110, 235 105, 230 100, 225 97, 210 91, 200 90, 175 93" fill="#8c0033" stroke="black"/>

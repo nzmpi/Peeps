@@ -5,32 +5,31 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "./Utils.sol";
 import "./lib/Structs.sol";
-import { PeepsMetadata } from "./lib/PeepsMetadata.sol";
+import { IPeepsMetadata } from "./lib/Interfaces.sol";
 
 contract Peeps is Utils, ERC721("PEEPS","PPS") {
     using Strings for uint256;
     uint256 constant MAX_MINT = 20;
     uint256 constant MAX_COLOR = type(uint24).max; // 0xffffff
-    PeepsMetadata immutable peepsMetadata;
+    IPeepsMetadata immutable PM;
 
     uint64 totalPeeps = 1;
     uint64[20] mintedPeeps;
     Peep[] peeps;
 
     mapping(address => uint64[]) ownedPeeps;
-    mapping(uint256 => bool) public breedingAllowed;
 
-    constructor() payable {
-      peepsMetadata = new PeepsMetadata();
+    constructor(address _PM) payable {
+      PM = IPeepsMetadata(_PM);
+      mint();
     }
 
-    function mint() external payable {
+    function mint() public payable {
       uint256 index = checkMint();
-      if (msg.value != mintingFee) revert Errors.NotEnoughEth();
+      //if (msg.value != mintingFee) revert Errors.NotEnoughEth();
       uint256 id = totalPeeps;
       ++totalPeeps;
       mintedPeeps[index] = uint64(id);
-      uint64[] memory empty = new uint64[](0);
       uint256 genes = getRandomNumber(id);
       uint256 bodyColor1 = genes % MAX_COLOR;
       genes /= 10;
@@ -42,21 +41,24 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
         uint32 kidTime,
         uint32 adultTime,
         uint32 oldTime
-      ) = peepsMetadata.getTimes(genes);
+      ) = PM.getTimes(genes);
 
       ownedPeeps[msg.sender].push(uint64(id));
       peeps.push(Peep({
         genes: genes,
-        hasHat: 0,
+        isBuried: false,
+        breedingAllowed: false,
         breedCount: 0,
+        hasHat: 0,
         bodyColor1: uint24(bodyColor1),
         bodyColor2: uint24(bodyColor2),
         eyesColor: uint24(eyesColor),
+        birthTime: uint32(block.timestamp),
         kidTime: kidTime,
         adultTime: adultTime,
         oldTime: oldTime,
-        parents: empty,
-        children: empty,
+        parents: [uint64(0), 0],
+        children: new uint64[](0),
         peepName: defaultName
       }));
 
@@ -79,7 +81,8 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-      return peepsMetadata.tokenURI(peeps[tokenId-1], tokenId);
+      if (!_exists(tokenId)) revert Errors.NotAllowed();
+      return PM.tokenURI(peeps[tokenId-1], tokenId);
     }
 
     function changeName(uint256 tokenId, string calldata newName) external {
@@ -133,10 +136,10 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     function createKid(uint256 tokenId1, Peep storage peep1, uint256 tokenId2, Peep storage peep2) internal returns (uint256 id) {
       id = totalPeeps;
       ++totalPeeps;
-      uint64[] memory parents = new uint64[](2);
-      parents[0] = uint64(tokenId1);
-      parents[1] = uint64(tokenId2);
-      uint64[] memory empty = new uint64[](0);
+      uint64[2] memory parents = [
+        uint64(tokenId1),
+        uint64(tokenId2)
+      ];
       uint256 genes = getRandomNumber(id);
       uint24 bodyColor1;
       uint24 bodyColor2;
@@ -158,21 +161,24 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
         uint32 kidTime,
         uint32 adultTime,
         uint32 oldTime
-      ) = peepsMetadata.getTimes(genes);
+      ) = PM.getTimes(genes);
 
       ownedPeeps[msg.sender].push(uint64(id));
       peeps.push(Peep({
         genes: genes,
+        isBuried: false,
+        breedingAllowed: false,
         hasHat: 0,
         breedCount: 0,
         bodyColor1: bodyColor1,
         bodyColor2: bodyColor2,
         eyesColor: eyesColor,
+        birthTime: uint32(block.timestamp),
         kidTime: kidTime,
         adultTime: adultTime,
         oldTime: oldTime,
         parents: parents,
-        children: empty,
+        children: new uint64[](0),
         peepName: defaultName
       }));
 
@@ -192,7 +198,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     function toggleBreeding(uint256 tokenId) external {
       if (!_isApprovedOrOwner(msg.sender, tokenId)) 
         revert Errors.NotAllowed();
-      breedingAllowed[tokenId] = !breedingAllowed[tokenId];
+      peeps[tokenId-1].breedingAllowed = !peeps[tokenId-1].breedingAllowed;
       emit Events.BreedingChanged(tokenId);
     }
 
@@ -204,7 +210,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       ) return false;
       if (peep.breedCount > 2) return false;
       return (
-        breedingAllowed[tokenId] ||
+        peep.breedingAllowed ||
         _isApprovedOrOwner(msg.sender, tokenId)
         );
     }
@@ -220,6 +226,14 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       Peep storage grandKid = peeps[receiverId-1];
       grandKid.hasHat = uint24(getRandomNumber(giverId) % MAX_COLOR);
       emit Events.GiftHat(giverId, receiverId);
+    }
+
+    function buryPeep(uint256 tokenId) external {
+      if (!_isApprovedOrOwner(msg.sender, tokenId)) revert Errors.NotOwner();
+      Peep storage peep = peeps[tokenId-1];
+      if (peep.isBuried) revert Errors.NotAllowed();
+      //if (peep.oldTime > block.timestamp) revert Errors.NotAllowed();
+      peep.isBuried = true;
     }
 
     function isGrandKid(
@@ -243,15 +257,6 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       return false;
     }
 
-    function withdrawFunds() external {
-      uint256 funds_ = funds[msg.sender];
-      if (funds_ == 0) revert Errors.NotEnoughEth();
-      delete funds[msg.sender];
-      lockedFunds -= funds_;
-      (bool s,) = msg.sender.call{value: funds_}("");
-      if (!s) revert();
-    }
-
     function getPeeps() external view returns (Peep[] memory) {
       return peeps;
     }
@@ -273,8 +278,8 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     )));
     }
 
-    function getPeepsMetadata() external view returns (address) {
-      return address(peepsMetadata);
+    function getPeepsMetadatas() external view returns (address,address) {
+      return (address(PM), PM.getPM2());
     }
 
     function getTime() external view returns (uint256) {

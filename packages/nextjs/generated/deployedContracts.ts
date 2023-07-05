@@ -5,10 +5,16 @@ const contracts = {
       name: "localhost",
       contracts: {
         Peeps: {
-          address: "0x1fA02b2d6A771842690194Cf62D91bdd92BfE28d",
+          address: "0xc5a5C42992dECbae36851359345FE25997F5C42d",
           abi: [
             {
-              inputs: [],
+              inputs: [
+                {
+                  internalType: "address",
+                  name: "_PM",
+                  type: "address",
+                },
+              ],
               stateMutability: "payable",
               type: "constructor",
             },
@@ -317,25 +323,6 @@ const contracts = {
               type: "function",
             },
             {
-              inputs: [
-                {
-                  internalType: "uint256",
-                  name: "",
-                  type: "uint256",
-                },
-              ],
-              name: "breedingAllowed",
-              outputs: [
-                {
-                  internalType: "bool",
-                  name: "",
-                  type: "bool",
-                },
-              ],
-              stateMutability: "view",
-              type: "function",
-            },
-            {
               inputs: [],
               name: "breedingFee",
               outputs: [
@@ -346,6 +333,19 @@ const contracts = {
                 },
               ],
               stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "uint256",
+                  name: "tokenId",
+                  type: "uint256",
+                },
+              ],
+              name: "buryPeep",
+              outputs: [],
+              stateMutability: "nonpayable",
               type: "function",
             },
             {
@@ -474,14 +474,24 @@ const contracts = {
                       type: "uint256",
                     },
                     {
-                      internalType: "uint24",
-                      name: "hasHat",
-                      type: "uint24",
+                      internalType: "bool",
+                      name: "isBuried",
+                      type: "bool",
+                    },
+                    {
+                      internalType: "bool",
+                      name: "breedingAllowed",
+                      type: "bool",
                     },
                     {
                       internalType: "uint8",
                       name: "breedCount",
                       type: "uint8",
+                    },
+                    {
+                      internalType: "uint24",
+                      name: "hasHat",
+                      type: "uint24",
                     },
                     {
                       internalType: "uint24",
@@ -500,6 +510,11 @@ const contracts = {
                     },
                     {
                       internalType: "uint32",
+                      name: "birthTime",
+                      type: "uint32",
+                    },
+                    {
+                      internalType: "uint32",
                       name: "kidTime",
                       type: "uint32",
                     },
@@ -514,9 +529,9 @@ const contracts = {
                       type: "uint32",
                     },
                     {
-                      internalType: "uint64[]",
+                      internalType: "uint64[2]",
                       name: "parents",
-                      type: "uint64[]",
+                      type: "uint64[2]",
                     },
                     {
                       internalType: "uint64[]",
@@ -539,8 +554,13 @@ const contracts = {
             },
             {
               inputs: [],
-              name: "getPeepsMetadata",
+              name: "getPeepsMetadatas",
               outputs: [
+                {
+                  internalType: "address",
+                  name: "",
+                  type: "address",
+                },
                 {
                   internalType: "address",
                   name: "",
@@ -877,6 +897,159 @@ const contracts = {
               name: "withdrawFunds",
               outputs: [],
               stateMutability: "nonpayable",
+              type: "function",
+            },
+          ],
+        },
+        PeepsMetadata: {
+          address: "0x09635F643e140090A9A8Dcd712eD6285858ceBef",
+          abi: [
+            {
+              inputs: [],
+              stateMutability: "payable",
+              type: "constructor",
+            },
+            {
+              inputs: [],
+              name: "getPM2",
+              outputs: [
+                {
+                  internalType: "address",
+                  name: "",
+                  type: "address",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "uint256",
+                  name: "genes",
+                  type: "uint256",
+                },
+              ],
+              name: "getTimes",
+              outputs: [
+                {
+                  internalType: "uint32",
+                  name: "kidTime",
+                  type: "uint32",
+                },
+                {
+                  internalType: "uint32",
+                  name: "adultTime",
+                  type: "uint32",
+                },
+                {
+                  internalType: "uint32",
+                  name: "oldTime",
+                  type: "uint32",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  components: [
+                    {
+                      internalType: "uint256",
+                      name: "genes",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "bool",
+                      name: "isBuried",
+                      type: "bool",
+                    },
+                    {
+                      internalType: "bool",
+                      name: "breedingAllowed",
+                      type: "bool",
+                    },
+                    {
+                      internalType: "uint8",
+                      name: "breedCount",
+                      type: "uint8",
+                    },
+                    {
+                      internalType: "uint24",
+                      name: "hasHat",
+                      type: "uint24",
+                    },
+                    {
+                      internalType: "uint24",
+                      name: "bodyColor1",
+                      type: "uint24",
+                    },
+                    {
+                      internalType: "uint24",
+                      name: "bodyColor2",
+                      type: "uint24",
+                    },
+                    {
+                      internalType: "uint24",
+                      name: "eyesColor",
+                      type: "uint24",
+                    },
+                    {
+                      internalType: "uint32",
+                      name: "birthTime",
+                      type: "uint32",
+                    },
+                    {
+                      internalType: "uint32",
+                      name: "kidTime",
+                      type: "uint32",
+                    },
+                    {
+                      internalType: "uint32",
+                      name: "adultTime",
+                      type: "uint32",
+                    },
+                    {
+                      internalType: "uint32",
+                      name: "oldTime",
+                      type: "uint32",
+                    },
+                    {
+                      internalType: "uint64[2]",
+                      name: "parents",
+                      type: "uint64[2]",
+                    },
+                    {
+                      internalType: "uint64[]",
+                      name: "children",
+                      type: "uint64[]",
+                    },
+                    {
+                      internalType: "string",
+                      name: "peepName",
+                      type: "string",
+                    },
+                  ],
+                  internalType: "struct Peep",
+                  name: "peep",
+                  type: "tuple",
+                },
+                {
+                  internalType: "uint256",
+                  name: "id",
+                  type: "uint256",
+                },
+              ],
+              name: "tokenURI",
+              outputs: [
+                {
+                  internalType: "string",
+                  name: "",
+                  type: "string",
+                },
+              ],
+              stateMutability: "view",
               type: "function",
             },
           ],

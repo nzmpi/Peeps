@@ -30,6 +30,7 @@
   },
   "packageManager": "yarn@3.2.3",
   "devDependencies": {
+    "@types/react": "^18.0.9",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3"
   },
@@ -37,7 +38,9 @@
     "usehooks-ts@^2.7.2": "patch:usehooks-ts@npm:^2.7.2#./.yarn/patches/usehooks-ts-npm-2.7.2-fceffe0e43.patch"
   },
   "dependencies": {
+    "react": "^18.2.0",
     "react-inlinesvg": "^3.0.2",
+    "react-paginate": "^8.2.0",
     "vercel": "latest"
   }
 }

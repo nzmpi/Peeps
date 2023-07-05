@@ -5,49 +5,6 @@ library SVGData {
   bytes16 internal constant ALPHABET = '0123456789abcdef';
   uint256 constant NUMBER_OF_HATS = 3;
 
-  function getBackground(
-    uint256 background,
-    uint24 color1,
-    uint24 color2
-  ) internal pure returns (string memory) {
-    if (background == 0)
-      return string(abi.encodePacked(
-        '<path d="M 0 230, 400 180, 400 400, 0 400 z" fill="#',
-        toColor(color1),
-        '" stroke="black"/>',
-        '<path d="M 0 230, 400 180, 400 0, 0 0 z" fill="#',
-        toColor(color2),
-        '" stroke="black"/>'
-      ));
-    else if (background == 1) 
-      return string(abi.encodePacked(
-        '<path d="M 0 60, 400 250, 400 400, 0 400 z" fill="#',
-        toColor(color1),
-        '" stroke="black"/>',
-        '<path d="M 0 60, 400 250, 400 0, 0 0 z" fill="#',
-        toColor(color2),
-        '" stroke="black"/>'
-      ));
-    else if (background == 2)
-      return string(abi.encodePacked(
-        '<path d="M 0 260 C0 260, 100 112, 400 260 M 400 260, 400 400, 0 400 0 260" fill="#',
-        toColor(color1),
-        '" stroke="black"/>',
-        '<path d="M 0 260 C0 260, 100 112, 400 260 M 400 260, 400 0, 0 0 0 260" fill="#',
-        toColor(color2),
-        '" stroke="black"/>'
-      ));
-    else
-      return string(abi.encodePacked(
-        '<path d="M400 200, 400 400, 0 400, 0 260 C100 112, 200 370, 400 200 " fill="#',
-        toColor(color1),
-        '" stroke="black"/>',
-        '<path d="M400 200, 400 0, 0 0, 0 260 C100 112, 200 370, 400 200 " fill="#',
-        toColor(color2),
-        '" stroke="black"/>'
-      ));
-  }
-
   function getAdultLegs() internal pure returns (string memory) {
     return string(abi.encodePacked(
       '<path d="M180 280, 180 360, 160 375" fill="none" stroke="black" stroke-width="5"/>',
