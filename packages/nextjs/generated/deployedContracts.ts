@@ -5,7 +5,7 @@ const contracts = {
       name: "localhost",
       contracts: {
         Peeps: {
-          address: "0xc5a5C42992dECbae36851359345FE25997F5C42d",
+          address: "0x9A676e781A523b5d0C0e43731313A708CB607508",
           abi: [
             {
               inputs: [
@@ -265,6 +265,19 @@ const contracts = {
               name: "acceptOwnership",
               outputs: [],
               stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "allTokenURI",
+              outputs: [
+                {
+                  internalType: "string[]",
+                  name: "",
+                  type: "string[]",
+                },
+              ],
+              stateMutability: "view",
               type: "function",
             },
             {
@@ -902,7 +915,7 @@ const contracts = {
           ],
         },
         PeepsMetadata: {
-          address: "0x09635F643e140090A9A8Dcd712eD6285858ceBef",
+          address: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82",
           abi: [
             {
               inputs: [],

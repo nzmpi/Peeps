@@ -81,8 +81,19 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-      if (!_exists(tokenId)) revert Errors.NotAllowed();
+      if (!_exists(tokenId)) return '';// revert Errors.NotAllowed();
       return PM.tokenURI(peeps[tokenId-1], tokenId);
+    }
+
+    function allTokenURI() external view returns (string[] memory) {
+      uint256 len = peeps.length;
+      string[] memory svgs = new string[](len);
+      if (len == 0) return svgs;
+      for (uint256 i; i<len;) {
+        svgs[i] = PM.tokenURI(peeps[i], i);
+        unchecked {++i;}
+      }
+      return svgs;
     }
 
     function changeName(uint256 tokenId, string calldata newName) external {
@@ -272,6 +283,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     function getRandomNumber(uint256 tokenId) internal view returns (uint256) {
     return uint256(keccak256(abi.encode(
       block.prevrandao, 
+      blockhash(block.number - 1),
       tokenId,
       msg.sender,
       address(this)
