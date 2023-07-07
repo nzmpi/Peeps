@@ -87,13 +87,24 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
 
     function allTokenURI() external view returns (string[] memory) {
       uint256 len = peeps.length;
-      string[] memory svgs = new string[](len);
-      if (len == 0) return svgs;
+      string[] memory URIs = new string[](len);
+      if (len == 0) return URIs;
       for (uint256 i; i<len;) {
-        svgs[i] = PM.tokenURI(peeps[i], i);
+        URIs[i] = PM.tokenURI(peeps[i], i);
         unchecked {++i;}
       }
-      return svgs;
+      return URIs;
+    }
+
+    function allOwners() external view returns (address[] memory) {
+      uint256 len = peeps.length;
+      address[] memory owners = new address[](len);
+      if (len == 0) return owners;
+      for (uint256 i; i < len;) {
+        owners[i] = ownerOf(i+1);
+        unchecked {++i;}
+      }
+      return owners;
     }
 
     function changeName(uint256 tokenId, string calldata newName) external {
