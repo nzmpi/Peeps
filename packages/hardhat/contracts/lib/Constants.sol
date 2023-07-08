@@ -9,7 +9,7 @@ library Constants {
   uint256 constant NUMBER_OF_MOUTHS = 6;
   uint256 constant NUMBER_OF_MOUSTACHE = 5;
   uint256 constant NUMBER_OF_HATS = 3;
-  uint256 constant kidTime_MIN = 10000000 minutes;//2 hours;
+  uint256 constant kidTime_MIN = 1 minutes;//2 hours;
   uint256 constant adultTime_MIN = 1 minutes;//2 weeks;
   uint256 constant oldTime_MIN = 1 minutes;//10 hours;
 }

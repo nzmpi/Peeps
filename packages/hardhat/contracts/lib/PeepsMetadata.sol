@@ -300,14 +300,13 @@ contract PeepsMetadata {
     uint256 x1;
     uint256 x2;
     uint256 x3;
-    uint256 x4;
 
+    // background
     x1 = genes % Constants.NUMBER_OF_BACKGROUNDS;
     genes /= 10; // changing the number
     x2 = genes % Constants.MAX_COLOR;
     genes /= 10;
     x3 = genes % Constants.MAX_COLOR;
-    // background
     svg = PM2.getBackground(x1, uint24(x2), uint24(x3));
 
     // legs
@@ -317,11 +316,11 @@ contract PeepsMetadata {
 
     // arms
     genes /= 1000;
-    x3 = genes % Constants.NUMBER_OF_ARMS;
+    x1 = genes % Constants.NUMBER_OF_ARMS;
     genes /= 10;
-    x4 = genes % Constants.NUMBER_OF_ARMS; 
+    x2 = genes % Constants.NUMBER_OF_ARMS; 
     svg = string(abi.encodePacked(svg,
-      SVGData.getAdultArms(0,0,x3,x4,false)
+      SVGData.getAdultArms(0,0,x1,x2,false)
     ));
 
     // body
@@ -335,7 +334,7 @@ contract PeepsMetadata {
     ));
 
     // eyebrows
-    genes /= 1000;
+    genes /= 10;
     x1 = genes % Constants.NUMBER_OF_EYEBROWS;
     svg = string(abi.encodePacked(svg,
       SVGData.getAdultEyebrows(x1)
@@ -352,7 +351,7 @@ contract PeepsMetadata {
     ));
 
     // moustache
-    genes /= 100;
+    genes /= 10;
     x1 = genes % Constants.NUMBER_OF_MOUSTACHE;
     svg = string(abi.encodePacked(svg,
       SVGData.getMoustache(x1)

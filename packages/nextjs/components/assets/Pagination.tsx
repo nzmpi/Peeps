@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import ReactPaginate from "react-paginate";
 import { 
   useScaffoldContractRead,
@@ -8,6 +8,10 @@ import { useAccount, useProvider } from 'wagmi';
 import { BigNumber, ethers } from "ethers";
 import { Spinner } from "~~/components/Spinner";
 import { Address } from "~~/components/scaffold-eth";
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@heroicons/react/24/outline";
 
 export enum Status {
   KID = "Kid",
@@ -18,12 +22,10 @@ export enum Status {
 }
 
 export const Pagination = () => {
-  const colors = ["bg-red-400", "bg-yellow-300", "bg-green-300", "bg-green-100"];
   const [itemOffset, setItemOffset] = useState(0);
-  const [peepArray, setPeepArray] = useState<any[]>();
   const [isLoadingPeepSvgs, setIsLoadingPeepSvgs] = useState(true);
   const [svgs, setSvgs] = useState<string[]>();
-  const [statuses, setStatuses] = useState<Status[3]>();
+  const [expanded, setExpanded] = useState(false);
 
   const { data: peeps } = useScaffoldContractRead({
     contractName: "Peeps",
@@ -105,6 +107,33 @@ export const Pagination = () => {
     return formattedTime;
   };
 
+  const getName = (name: string) : string => {
+    if (name.length <= 20) return name;
+    else {
+      return name.substring(0, 10) + "..." + name.substring(name.length - 8);
+    }
+  };
+
+  const getStatus = (index: number) => {
+    if (!peeps) return '';
+    const timeNow = Date.now()/1000;
+    if (peeps[index].isBuried === true) return Status.BURIED;
+    else if (timeNow < peeps[index].kidTime) return Status.KID;
+    else if (timeNow < peeps[index].adultTime) return Status.ADULT;
+    else if (timeNow < peeps[index].oldTime) return Status.OLD;
+    else return Status.DEAD;
+  }
+
+  const getNextStage = (index: number) => {
+    if (!peeps) return '';
+    const timeNow = Date.now()/1000;
+    if (peeps[index].isBuried === true) return "";
+    else if (timeNow < peeps[index].kidTime) return "Adulthood:";
+    else if (timeNow < peeps[index].adultTime) return "Old Age:";
+    else if (timeNow < peeps[index].oldTime) return "Death:";
+    else return "";
+  }
+
   const itemsPerPage = 3;
   const endOffset = itemOffset + itemsPerPage;
   const currentItems = peeps?.slice().reverse().slice(itemOffset, endOffset);
@@ -144,32 +173,92 @@ export const Pagination = () => {
         />
       </div>
       </div>
-      <div className={`flex flex-col items-center gap-1 w-[280px] h-[300px] rounded-[1rem] ${colors[3]} border`} style={{ marginTop: '-1.5rem' }}>
-      {true === true && (
-        <span className="text-1xl mt-5">            
-          <h1>{peeps[ind].peepName}</h1>  
-          <h1>{peeps[ind].oldTime}</h1> 
-          <h1>{Date.now()/1000}</h1> 
-          <Address address={owners[ind]}/>
-          <h1>{getStatus(ind)}</h1>
-          <div className="tooltip tooltip-info" data-tip={getDuration(ind)}>
-            {getTime(ind)}
-          </div>
+      <div>
+      {expanded === false && (
+      <div className={`flex flex-col items-center gap-1 w-[280px] h-[70px] rounded-[1rem] bg-green-300 border`} style={{ marginTop: '-1.5rem' }}>
+      
+      <div className="flex-col items-center mt-6">
+        <div className="p-2 py-0"> </div>
+        <span 
+          className="p-2 text-lg font-bold"   
+          style={{ marginLeft: '-2rem' }}> 
+          Id: 
         </span>
+        <span 
+          className="text-lg text-right"  
+          style={{ marginRight: '2.3rem' }}> 
+          #{ind+1} 
+        </span>
+        <button 
+          className="btn btn-success btn-sm" 
+          style={{ marginRight: '-2.5rem' }}
+          onClick={() => setExpanded(!expanded)}>
+          {expanded ? <ChevronUpIcon className="h-5 w-5 mr-2"/> : <ChevronDownIcon className="h-5 w-5 mr-2"/>}
+          <span>
+          {expanded
+            ? `Hide Info`
+            : `Show Info`}
+          </span>
+        </button>
+      </div>
+      </div>
+      )}
+
+      {expanded === true && (
+      <div className={`flex flex-col items-center gap-1 w-[280px] h-[300px]  rounded-[1rem] bg-green-300 border`} style={{ marginTop: '-1.5rem' }}>
+      
+      <div className="flex-col items-center mt-6">
+      <div className="p-2 py-0"> </div>
+        <span 
+          className="p-2 text-lg font-bold py-1"> 
+          Id: 
+        </span>
+        <span 
+          className="text-lg text-right"  
+          style={{ marginRight: '2.3rem' }}> 
+          #{ind+1} 
+        </span>
+        <button 
+          className="btn btn-secondary btn-sm" 
+          style={{ marginRight: '-2.5rem' }}
+          onClick={() => setExpanded(!expanded)}>
+          {expanded ? <ChevronUpIcon className="h-5 w-5 mr-2"/> : <ChevronDownIcon className="h-5 w-5 mr-2"/>}
+          <span>
+          {expanded
+            ? `Hide Info`
+            : `Show Info`}
+          </span>
+        </button>
+
+        <div className="p-2 py-1"> </div>
+        <span className="p-2 text-lg font-bold"> Name: </span>
+        <span className="text-lg text-right min-w-[2rem]"> 
+          {getName(peeps[ind].peepName)} 
+        </span>
+
+        <div className="p-2 py-0"> </div>
+        <div className="flex flex-row">
+        <span className="p-2 text-lg font-bold"> Owner: </span>
+          <Address address={owners[ind]}/>
+        </div>
+
+        <div className="p-2 py-0"> </div>
+        <span className="p-2 text-lg font-bold"> Status: </span>
+        <span className="text-lg text-right min-w-[2rem]"> 
+          {getStatus(ind)} 
+        </span>
+
+        <div className="p-2 py-0.5"> </div>
+        <span className="p-2 text-lg font-bold"> {getNextStage(ind)} </span>
+        <div className="tooltip tooltip-success" data-tip={getDuration(ind)}>
+          {getTime(ind)}
+        </div>
+      </div>
+      </div>
       )}
       </div>
     </div>
     );
-  }
-
-  const getStatus = (index: number) => {
-    if (!peeps) return '';
-    const timeNow = Date.now()/1000;
-    if (peeps[index].isBuried === true) return Status.BURIED;
-    else if (timeNow < peeps[index].kidTime) return Status.KID;
-    else if (timeNow < peeps[index].adultTime) return Status.ADULT;
-    else if (timeNow < peeps[index].oldTime) return Status.OLD;
-    else return Status.DEAD;
   }
 
   useEffect(() => {
