@@ -5,7 +5,7 @@ const contracts = {
       name: "localhost",
       contracts: {
         Peeps: {
-          address: "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d",
+          address: "0x67d269191c92Caf3cD7723F116c85e6E9bf55933",
           abi: [
             {
               inputs: [
@@ -239,6 +239,19 @@ const contracts = {
               anonymous: false,
               inputs: [
                 {
+                  indexed: false,
+                  internalType: "address",
+                  name: "newPM",
+                  type: "address",
+                },
+              ],
+              name: "PeepsMetadataChanged",
+              type: "event",
+            },
+            {
+              anonymous: false,
+              inputs: [
+                {
                   indexed: true,
                   internalType: "address",
                   name: "from",
@@ -414,6 +427,19 @@ const contracts = {
                 },
               ],
               name: "changeName",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "address",
+                  name: "newPM",
+                  type: "address",
+                },
+              ],
+              name: "changePeepsMetadata",
               outputs: [],
               stateMutability: "nonpayable",
               type: "function",
@@ -928,7 +954,7 @@ const contracts = {
           ],
         },
         PeepsMetadata: {
-          address: "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
+          address: "0xc5a5C42992dECbae36851359345FE25997F5C42d",
           abi: [
             {
               inputs: [],

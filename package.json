@@ -31,6 +31,8 @@
   "packageManager": "yarn@3.2.3",
   "devDependencies": {
     "@types/react": "^18.0.9",
+    "@types/react-dom": "^18",
+    "@types/react-modal": "^3",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3"
   },
@@ -40,7 +42,9 @@
   "dependencies": {
     "react": "^18.2.0",
     "react-countdown": "^2.3.5",
+    "react-dom": "^18.2.0",
     "react-inlinesvg": "^3.0.2",
+    "react-modal": "^3.16.1",
     "react-paginate": "^8.2.0",
     "vercel": "latest"
   }

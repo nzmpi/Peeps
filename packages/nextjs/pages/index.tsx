@@ -45,7 +45,7 @@ const Home: NextPage = () => {
 
   const { data: peepsContract, isLoading: isLoadingPeepsContract } = useDeployedContractInfo("Peeps");
 
-  useEffect(() => {
+  /*useEffect(() => {
     if(isLoadingPeepsContract || !isConnected) return;
     
     (async () => {
@@ -85,7 +85,7 @@ const Home: NextPage = () => {
       }
       setUsersSVG(svgs);
     })()
-  }, [isLoadingPeepsContract, Peeps])
+  }, [isLoadingPeepsContract, Peeps])*/
 
   const getSVG = (data: any) => {
     return (

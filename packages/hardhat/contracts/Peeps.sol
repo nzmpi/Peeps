@@ -5,13 +5,11 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "./Utils.sol";
 import "./lib/Structs.sol";
-import { IPeepsMetadata } from "./lib/Interfaces.sol";
 
 contract Peeps is Utils, ERC721("PEEPS","PPS") {
     using Strings for uint256;
     uint256 constant MAX_MINT = 20;
     uint256 constant MAX_COLOR = type(uint24).max; // 0xffffff
-    IPeepsMetadata immutable PM;
 
     uint64 totalPeeps = 1;
     uint64[20] mintedPeeps;
@@ -19,8 +17,9 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
 
     mapping(address => uint64[]) ownedPeeps;
 
-    constructor(address _PM) payable {
-      PM = IPeepsMetadata(_PM);
+    constructor(address _PM) payable { 
+      owner = msg.sender; 
+      PM = IPeepsMetadata(_PM);    
       mint();
     }
 
@@ -254,7 +253,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       if (!_isApprovedOrOwner(msg.sender, tokenId)) revert Errors.NotOwner();
       Peep storage peep = peeps[tokenId-1];
       if (peep.isBuried) revert Errors.NotAllowed();
-      //if (peep.oldTime > block.timestamp) revert Errors.NotAllowed();
+      if (peep.oldTime > block.timestamp) revert Errors.NotAllowed();
       peep.isBuried = true;
     }
 

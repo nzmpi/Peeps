@@ -6,6 +6,7 @@ library Events {
   event OwnershipAccepted(address indexed newOwner);
   event MintingFeeChanged(uint256 newFee);
   event BreedingFeeChanged(uint256 newFee);
+  event PeepsMetadataChanged(address newPM);
   event Mint(address indexed minter, uint256 indexed tokenId);
   event NameChanged(uint256 indexed tokenId, string newName);
   event Breed(
