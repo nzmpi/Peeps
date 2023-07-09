@@ -5,7 +5,7 @@ const contracts = {
       name: "localhost",
       contracts: {
         Peeps: {
-          address: "0x67d269191c92Caf3cD7723F116c85e6E9bf55933",
+          address: "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
           abi: [
             {
               inputs: [
@@ -954,7 +954,7 @@ const contracts = {
           ],
         },
         PeepsMetadata: {
-          address: "0xc5a5C42992dECbae36851359345FE25997F5C42d",
+          address: "0x68B1D87F95878fE05B998F19b66F4baba5De1aed",
           abi: [
             {
               inputs: [],

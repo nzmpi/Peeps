@@ -310,8 +310,8 @@ contract PeepsMetadata2 {
 
   function arrayToString(uint64[] memory arr) internal pure returns (string memory str) {
     uint256 len = arr.length;
-    if (len == 0) return 'none';
-    if (arr[0] == 0) return 'none';
+    if (len == 0) return 'None';
+    if (arr[0] == 0) return 'None';
     --len;
     for (uint256 i; i < len;) {
       str = string(abi.encodePacked(str,

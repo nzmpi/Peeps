@@ -12,6 +12,7 @@ import { Address, InputBase  } from "~~/components/scaffold-eth";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import Modal from 'react-modal';
 
@@ -29,7 +30,7 @@ export const Pagination = () => {
   const [svgs, setSvgs] = useState<string[]>();
   const [expanded, setExpanded] = useState([false,false,false]);
   const [tokenId, setTokenId] = useState(BigNumber.from(0));
-  const [partnerTokenId, setPartnerTokenId] = useState(BigNumber.from(0));
+  const [partnerTokenId, setPartnerTokenId] = useState("");
   const [newName, setNewName] = useState("");
   const [isModalOpen, setIsModalOpen] = useState([false,false,false]);
 
@@ -56,32 +57,34 @@ export const Pagination = () => {
   const { writeAsync: changeName, isLoading: changeNameLoading } = useScaffoldContractWrite({
     contractName: "Peeps",
     functionName: "changeName",
-    args: [tokenId, newName],
+    args: [BigNumber.from(tokenId), newName],
   });
 
   const { writeAsync: breed, isLoading: breedLoading } = useScaffoldContractWrite({
     contractName: "Peeps",
     functionName: "breed",
-    args: [tokenId, partnerTokenId],
+    args: [BigNumber.from(tokenId), 
+      partnerTokenId === "" ? BigNumber.from(0) : BigNumber.from(partnerTokenId)],
     value: ethers.utils.formatEther(breedingFee?.toString() || 0),
   });
 
   const { writeAsync: giftHat, isLoading: giftHatLoading } = useScaffoldContractWrite({
     contractName: "Peeps",
     functionName: "giftHat",
-    args: [tokenId, partnerTokenId],
+    args: [BigNumber.from(tokenId), 
+      partnerTokenId === "" ? BigNumber.from(0) : BigNumber.from(partnerTokenId)],
   });
 
   const { writeAsync: buryPeep, isLoading: buryPeepLoading } = useScaffoldContractWrite({
     contractName: "Peeps",
     functionName: "buryPeep",
-    args: [tokenId],
+    args: [BigNumber.from(tokenId)],
   });
 
   const { writeAsync: toggleBreeding, isLoading: toggleBreedingLoading } = useScaffoldContractWrite({
     contractName: "Peeps",
     functionName: "toggleBreeding",
-    args: [tokenId],
+    args: [BigNumber.from(tokenId)],
   });
 
   const changeExpanding = (index: number) => {
@@ -182,16 +185,60 @@ export const Pagination = () => {
     if (!peeps) return '';
     if (peeps[index].isBuried === true) return "";
     else if (getStatus(index) === Status.KID) return "Change Name";
-    else if (getStatus(index) === Status.ADULT) return "Breed";
+    else if (getStatus(index) === Status.ADULT) {
+      if (peeps[index].breedCount > 2)
+        return "Max kids";
+      else
+        return "Breed";
+    }
     else if (getStatus(index) === Status.OLD) return "Gift Hat";
     else return "Bury";
+  }
+
+  const getGrandkids = () => {
+    if (!peeps || !tokenId.toNumber()) return '';
+    let grandkids;
+    let grandkidsFinal:string[] = [];
+    const kids = peeps[tokenId.toNumber()-1].children;
+    if (kids.length === 0) return "None";
+    for (let i = 0; i < kids.length; i++) {
+      grandkids = peeps[kids[i].toNumber()-1].children;
+      if (grandkids.length === 0) continue;
+      for (let j = 0; j < grandkids.length; j++) {
+        if (grandkidsFinal.includes(grandkids[j].toString())) continue;
+        else grandkidsFinal.push(grandkids[j].toString());
+      }
+    }
+
+    if (grandkidsFinal.length === 0) return "None";
+    let grandkidsString = "";
+    for (let i = 0; i < grandkidsFinal.length; ++i) {
+      grandkidsString += grandkidsFinal[i] + ", ";
+    }
+    return grandkidsString.slice(0, -2);
+  }
+
+  const isGrandkid = (id: string) => {
+    if (!peeps || !tokenId.toNumber()) return false;
+    let grandkids;
+    const kids = peeps[tokenId.toNumber()-1].children;
+    if (kids.length === 0) return false;
+    for (let i = 0; i < kids.length; i++) {
+      grandkids = peeps[kids[i].toNumber()-1].children;
+      if (grandkids.length === 0) continue;
+      for (let j = 0; j < grandkids.length; j++) {
+        if (grandkids[j].toString() === id) return true;
+      }
+    }
+
+    return false;
   }
 
   const closeModal = () => {
     setIsModalOpen(prevState => prevState.map(() => false));
     setNewName("");
     setTokenId(BigNumber.from(0));
-    setPartnerTokenId(BigNumber.from(0));
+    setPartnerTokenId("");
   }
 
   const openModal = (index: number) => {
@@ -208,9 +255,7 @@ export const Pagination = () => {
     }
   }
 
-  const changeBreedingAllowance = (index: number) => {
-    setTokenId(BigNumber.from(index+1));
-
+  const changeBreedingAllowance = () => {
     toggleBreeding();
   }
 
@@ -229,6 +274,15 @@ export const Pagination = () => {
     setItemOffset(newOffset);
     setExpanded(prevState => prevState.map(() => false));
   };
+
+  const isBreedingAllowed = (index: number) => {
+    if (!owners || !peeps || !peeps[index]) return false;
+    if (getStatus(index) === Status.ADULT &&
+      (owners[index] === connectedAccount ||
+       peeps[index].breedingAllowed === true) &&       
+       peeps[index].breedCount < 3) return true;
+    else return false;
+  }
 
   const {address: connectedAccount, isConnected} = useAccount()
   let provider = useProvider();
@@ -256,10 +310,8 @@ export const Pagination = () => {
       </div>
       <div>
       {expanded[index] === false && (
-      <div className={`flex flex-col items-center gap-1 w-[280px] h-[70px] rounded-[1rem] bg-green-300 border`} style={{ marginTop: '-1.5rem' }}>      
-      <div className="flex-col items-center mt-6">
-        <div className="p-2 py-0"> </div>
-        <div>
+      <div className={`flex flex-col items-center gap-1 w-[280px] h-[70px] rounded-[1rem] bg-green-300 border`} style={{ marginTop: '-1.5rem' }}>    
+      <div className="mt-6">
         <span 
           className="p-2 text-lg font-bold"   
           style={{ marginLeft: '-2rem' }}> 
@@ -274,21 +326,18 @@ export const Pagination = () => {
           className="btn btn-success btn-sm" 
           style={{ marginRight: '-2.5rem' }}
           onClick={() => changeExpanding(index)}>
-          {expanded[index] ? <ChevronUpIcon className="h-5 w-5 mr-2"/> : <ChevronDownIcon className="h-5 w-5 mr-2"/>}
+          <ChevronDownIcon className="h-4 w-6"/>
         </button>
-      </div>
       </div>
       </div>
       )}
 
       {expanded[index] === true && (
-      <div className={`flex flex-col items-center gap-1 w-[280px] rounded-[1rem] bg-green-300 border py-4`} style={{ marginTop: '-1.5rem' }}>     
-      <div className="flex-col items-center mt-6">
-      <div className="p-2 py-0"> </div>
-      <div>
+      <div className={`flex flex-col items-center gap-1 w-[280px] rounded-[1rem] bg-green-300 border py-4`} style={{ marginTop: '-1.8rem' }}> 
+      <div className="mt-3">
         <span 
           className="p-2 text-lg font-bold"   
-          style={{ marginLeft: '3.7rem' }}> 
+          style={{ marginLeft: '-2rem' }}>  
           Id: 
         </span>
         <span 
@@ -300,9 +349,11 @@ export const Pagination = () => {
           className="btn btn-success btn-sm" 
           style={{ marginRight: '-2.5rem' }}
           onClick={() => changeExpanding(index)}>
-          {expanded[index] ? <ChevronUpIcon className="h-5 w-5 mr-2"/> : <ChevronDownIcon className="h-5 w-5 mr-2"/>}
+          <ChevronUpIcon className="h-4 w-6"/>
         </button>
-        </div>
+      </div>    
+      <div className="flex-col items-center">     
+      
         <div className="p-2 py-1"> </div>
         <span className="p-2 text-lg font-bold"> Name: </span>
         <span className="text-lg text-right min-w-[2rem]"> 
@@ -318,13 +369,13 @@ export const Pagination = () => {
         <div className="p-2 py-0"> </div>
         <span className="p-2 text-lg font-bold"> Parents: </span>
         <span className="text-lg text-right min-w-[2rem]"> 
-          {peeps[ind].parents.toString() === "0,0" ? "none" : peeps[ind].parents.toString()} 
+          {peeps[ind].parents.toString() === "0,0" ? "None" : peeps[ind].parents.toString()} 
         </span>
 
         <div className="p-2 py-0.5"> </div>
         <span className="p-2 text-lg font-bold"> Kids: </span>
         <span className="text-lg text-right min-w-[2rem]"> 
-          {peeps[ind].children.toString() === "" ? "none" : peeps[ind].children.toString()} 
+          {peeps[ind].children.toString() === "" ? "None" : peeps[ind].children.toString()} 
         </span>
 
         <div className="p-2 py-0.5"> </div>
@@ -350,8 +401,12 @@ export const Pagination = () => {
         (
         <div className="flex items-center justify-center"> 
         <button 
+          disabled={buryPeepLoading || 
+           (getStatus(ind) === Status.ADULT &&
+           peeps[ind].breedCount > 2)}
           className="btn btn-success btn-sm" 
           onClick={() => openModal(ind)}
+          onMouseEnter={() => setTokenId(BigNumber.from(ind+1))}
         >
         {buryPeepLoading && (
           <>
@@ -370,25 +425,26 @@ export const Pagination = () => {
         {getStatus(ind) === Status.ADULT &&
         (
         <div>
-        <span className="p-2 text-lg font-bold"> breeding for</span>
+        <span className="p-2 text-md font-bold"> breeding for</span>
         </div> )}     
         
         <div className="p-2 py-0"> </div>
         {getStatus(ind) === Status.ADULT &&
         (
         <div>
-        <span className="p-2 text-lg font-bold"> 3rd parties:</span>
+        <span className="p-2 text-md font-bold"> 3rd parties:</span>
         <button 
-          disabled={owners[ind] !== connectedAccount}
-          className={`btn ${peeps[ind].breedingAllowed ? "btn-success" : "btn-warning"}  btn-sm`}
-          onClick={() => changeBreedingAllowance(ind)}
+          disabled={owners[ind] !== connectedAccount || toggleBreedingLoading}
+          className={`btn ${peeps[ind].breedingAllowed ? "btn-success" : "btn-warning"} btn-sm mx-2 min-w-[8rem]`}
+          onClick={() => changeBreedingAllowance()}
+          onMouseEnter={() => setTokenId(BigNumber.from(ind+1))}
         >
-        {buryPeepLoading && (
+        {toggleBreedingLoading && (
           <>
             <Spinner/>
           </>
         )}
-        {!buryPeepLoading && (
+        {!toggleBreedingLoading && (
           <>
             {peeps[ind].breedingAllowed ? "Allowed" : "Not allowed"}
           </>
@@ -398,19 +454,23 @@ export const Pagination = () => {
 
       </div>
       </div>
+      
       )}
       </div>
     <Modal
       isOpen={isModalOpen[0]}
       onRequestClose={closeModal}
       contentLabel="Modal 1"
-      className="flex flex-col absolute z-[21] top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-base-100 border-base-300 border shadow-md rounded-3xl px-6 lg:px-8 py-6 lg:py-10 gap-4"
+      className="flex flex-col absolute z-[21] top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-green-300 border-green-300 border shadow-md rounded-3xl px-6 lg:px-8 py-6 lg:py-10 gap-4"
       >
-      <h3 className="font-bold text-lg">
-        Change name of {peeps[ind].peepName}
-      </h3>
-      <InputBase placeholder="input" value={newName || ""} onChange={setNewName}/>
-      <button className="btn btn-primary btn-sm mt-3.5" onClick={() => changeName()}>
+      <span className="font-bold text-lg">
+        Change name of {peeps[tokenId.toNumber()-1]?.peepName}
+      </span>
+      <InputBase placeholder="New name" value={newName} onChange={setNewName}/>
+      <button 
+        disabled={changeNameLoading || 
+          newName === ""}
+        className="btn btn-success btn-sm mt-3.0" onClick={() => changeName()}>
       {changeNameLoading && (
       <>
         <Spinner/>
@@ -422,7 +482,7 @@ export const Pagination = () => {
       </>
       )}
       </button>
-      <button className="btn btn-secondary btn-sm" onClick={() => closeModal()}>
+      <button className="btn btn-warning btn-sm" onClick={() => closeModal()}>
         Cancel
       </button>
     </Modal>
@@ -430,17 +490,23 @@ export const Pagination = () => {
     <Modal
       isOpen={isModalOpen[1]}
       onRequestClose={closeModal}
-      contentLabel="Modal 1"
-      className="flex flex-col absolute z-[21] top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-base-100 border-base-300 border shadow-md rounded-3xl px-6 lg:px-8 py-6 lg:py-10 gap-4"
+      contentLabel="Modal 2"
+      className="flex flex-col absolute z-[21] top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-green-300 border-green-300 border shadow-md rounded-3xl px-6 lg:px-8 py-6 lg:py-10 gap-4"
       >
-      <h3 className="font-bold text-lg">
-        Breed {peeps[index].peepName}
-      </h3>
-      <label className="label">
-        <span className="label-text font-bold">Partner Id </span>
-      </label>
-      <InputBase placeholder="Id" value={partnerTokenId} onChange={setPartnerTokenId}/>
-      <button className="btn btn-primary btn-sm mt-3.5" onClick={() => breed()}>
+      <span className="font-bold text-lg">
+        Breed {peeps[tokenId.toNumber()-1]?.peepName} with
+      </span>
+      <InputBase placeholder="Id" value={partnerTokenId} 
+      onChange={value => {
+        if (value === "") {
+          setPartnerTokenId("");
+        } else   
+          setPartnerTokenId(value);
+        }}/>
+      <button 
+        disabled={breedLoading || 
+          !isBreedingAllowed(Number(partnerTokenId)-1)}
+        className="btn btn-success btn-sm mt-3.0" onClick={() => breed()}>
       {breedLoading && (
       <>
         <Spinner/>
@@ -452,7 +518,7 @@ export const Pagination = () => {
       </>
       )}
       </button>
-      <button className="btn btn-secondary btn-sm" onClick={() => closeModal()}>
+      <button className="btn btn-warning btn-sm" onClick={() => closeModal()}>
         Cancel
       </button>
     </Modal>
@@ -460,17 +526,30 @@ export const Pagination = () => {
     <Modal
       isOpen={isModalOpen[2]}
       onRequestClose={closeModal}
-      contentLabel="Modal 1"
-      className="flex flex-col absolute z-[21] top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-base-100 border-base-300 border shadow-md rounded-3xl px-6 lg:px-8 py-6 lg:py-10 gap-4"
+      contentLabel="Modal 3"
+      className="flex flex-col absolute z-[21] top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-green-300 border-green-300 border shadow-md rounded-3xl px-6 lg:px-8 py-6 lg:py-10 gap-4"
       >
-      <h3 className="font-bold text-lg">
-        Gift a hat
-      </h3>
-      <label className="label">
-        <span className="label-text font-bold">Grandkid Id </span>
-      </label>
-      <InputBase placeholder="Id" value={partnerTokenId} onChange={setPartnerTokenId}/>
-      <button className="btn btn-primary btn-sm mt-3.5" onClick={() => giftHat()}>
+      
+      <div className="flex flex-row">
+        <span className="font-bold text-lg">
+          Gift a hat to
+        </span>
+        <div className="tooltip tooltip-success mt-1 ml-2"
+          data-tip={`Your grandkids: ${getGrandkids()}`}>
+        <InformationCircleIcon className="h-5 w-5 mr-0.5" />
+        </div>
+      </div>
+      <InputBase placeholder="Grandkid Id" value={partnerTokenId} 
+      onChange={value => {
+        if (value === "") {
+          setPartnerTokenId("");
+        } else   
+          setPartnerTokenId(value);
+      }}/>
+      <button 
+        disabled={giftHatLoading ||
+          !isGrandkid(partnerTokenId)}
+        className="btn btn-success btn-sm mt-3.0" onClick={() => giftHat()}>
       {giftHatLoading && (
       <>
         <Spinner/>
@@ -482,7 +561,7 @@ export const Pagination = () => {
       </>
       )}
       </button>
-      <button className="btn btn-secondary btn-sm" onClick={() => closeModal()}>
+      <button className="btn btn-warning btn-sm" onClick={() => closeModal()}>
         Cancel
       </button>
     </Modal>
@@ -516,30 +595,49 @@ export const Pagination = () => {
 return (
   <>
   <div className="mx-auto mt-8">
-    <div className="flex justify-center flex-col my-4">
-    <div className="flex flex-col w-9/12 ">
+    <div className="flex items-center justify-center flex-row my-4">
+    <div className="flex items-center justify-center flex-col w-9/12 ">
       <div className="mb-2 ml-2">
         Array
       </div>
     <div className="flex flex-row">
-      {!isLoadingPeepSvgs && currentItems &&
-        currentItems.map((arr, index) => (
-          <div className="my-2 mx-3 px-3 pt-3 bg-base-200">
+      {!isLoadingPeepSvgs && 
+       currentItems &&
+       currentItems.length !== 0 &&
+       currentItems.map((arr, index) => (
+          <div className="my-2 mx-3 px-3 pt-3 bg-base-200"
+            >
             {getSVG(index)}
           </div>
       ))}
 
-      {isLoadingPeepSvgs && (
+      {isLoadingPeepSvgs && 
+       isLoadingPeepsContract &&
+       (
         <>
           <Spinner/>
         </>
       )}
+      
     </div>
     </div>
-    <div className="flex flex-col w-9/12 ">
+  
+    {currentItems &&
+       currentItems.length === 0 &&
+       (
+        <div>
+        <span className="font-bold text-md">
+        No Peeps!
+        </span>
+        </div>
+      )}
+    </div>
 
+
+    <div>
+    <div className="flex flex-row justify-center min-w-[280px]">
       {currentItems && peeps && peeps.length > itemsPerPage &&
-      <div className="flex justify-center mt-5">
+      <div className="flex flex-col items-center mt-5 min-w-[700px]">
         <ReactPaginate
           breakLabel="..."
           pageRangeDisplayed={2}
@@ -550,16 +648,14 @@ return (
           onPageChange={handlePageClick}
           previousLinkClassName={"font-bold"}
           nextLinkClassName={"font-bold"}
-          activeClassName={"text-blue-500 bg-white rounded-md px-2 font-semibold"}
-          className="flex justify-between w-2/6 text-white bg-blue-500 rounded-md px-2 py-1"
+          activeClassName={"text-green-700 bg-white rounded-md px-2 font-semibold"}
+          className="flex justify-between w-2/6 text-white bg-green-500 rounded-md px-2 py-1"
           renderOnZeroPageCount={null}
         />
       </div>
       }
-
     </div>
     </div>
-  
   </div>
   </>
   );

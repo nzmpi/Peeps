@@ -136,17 +136,7 @@ const Home: NextPage = () => {
       <MetaHeader />
       <div className="flex items-center flex-col flex-grow pt-10">
 
-        <Pagination/>
-
-        <div className="flex items-center flex-raw flex-grow">    
-        <div>
-          Time now: {Time?.toString() || ""}
-          
-          {svgData.map((data) => (
-            getJson()       
-          ))}
-        </div>
-        </div>        
+        <Pagination/>       
         
       </div>
     </>

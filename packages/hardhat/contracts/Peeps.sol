@@ -20,7 +20,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     constructor(address _PM) payable { 
       owner = msg.sender; 
       PM = IPeepsMetadata(_PM);    
-      mint();
+      //mint();
     }
 
     function mint() public payable {
@@ -80,7 +80,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-      if (!_exists(tokenId)) return '';// revert Errors.NotAllowed();
+      if (!_exists(tokenId)) revert Errors.NotAllowed();
       return PM.tokenURI(peeps[tokenId-1], tokenId);
     }
 
@@ -89,7 +89,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       string[] memory URIs = new string[](len);
       if (len == 0) return URIs;
       for (uint256 i; i<len;) {
-        URIs[i] = PM.tokenURI(peeps[i], i);
+        URIs[i] = PM.tokenURI(peeps[i], i+1);
         unchecked {++i;}
       }
       return URIs;
@@ -291,21 +291,17 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     }
 
     function getRandomNumber(uint256 tokenId) internal view returns (uint256) {
-    return uint256(keccak256(abi.encode(
-      block.prevrandao, 
-      blockhash(block.number - 1),
-      tokenId,
-      msg.sender,
-      address(this)
-    )));
+      return uint256(keccak256(abi.encode(
+        block.prevrandao, 
+        blockhash(block.number - 1),
+        tokenId,
+        msg.sender,
+        address(this)
+      )));
     }
 
     function getPeepsMetadatas() external view returns (address,address) {
       return (address(PM), PM.getPM2());
-    }
-
-    function getTime() external view returns (uint256) {
-      return block.timestamp;
     }
 
     function totalSupply() external view returns (uint256) {
