@@ -5,7 +5,7 @@ const contracts = {
       name: "localhost",
       contracts: {
         Peeps: {
-          address: "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
+          address: "0x0165878A594ca255338adfa4d48449f69242Eb8F",
           abi: [
             {
               inputs: [
@@ -623,19 +623,6 @@ const contracts = {
               type: "function",
             },
             {
-              inputs: [],
-              name: "getTime",
-              outputs: [
-                {
-                  internalType: "uint256",
-                  name: "",
-                  type: "uint256",
-                },
-              ],
-              stateMutability: "view",
-              type: "function",
-            },
-            {
               inputs: [
                 {
                   internalType: "uint256",
@@ -954,7 +941,7 @@ const contracts = {
           ],
         },
         PeepsMetadata: {
-          address: "0x68B1D87F95878fE05B998F19b66F4baba5De1aed",
+          address: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
           abi: [
             {
               inputs: [],
