@@ -12,20 +12,19 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     uint256 constant MAX_COLOR = type(uint24).max; // 0xffffff
 
     uint64 totalPeeps = 1;
-    uint64[20] mintedPeeps;
+    uint64[MAX_MINT] mintedPeeps;
     Peep[] peeps;
 
     mapping(address => uint64[]) ownedPeeps;
 
     constructor(address _PM) payable { 
       owner = msg.sender; 
-      PM = IPeepsMetadata(_PM);    
-      //mint();
+      PM = IPeepsMetadata(_PM);
     }
 
-    function mint() public payable {
+    function mint() external payable {
       uint256 index = checkMint();
-      //if (msg.value != mintingFee) revert Errors.NotEnoughEth();
+      if (msg.value != mintingFee) revert Errors.NotEnoughEth();
       uint256 id = totalPeeps;
       ++totalPeeps;
       mintedPeeps[index] = uint64(id);

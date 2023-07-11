@@ -31,38 +31,26 @@ export const Footer = () => {
       <div className="w-full">
         <ul className="menu menu-horizontal w-full">
           <div className="flex justify-center items-center gap-2 text-sm w-full">
-            <div>
+          <div>
+              Built by {" "}
               <a
-                href="https://github.com/scaffold-eth/se-2"
+                href="https://etherscan.io/address/0x02d09E69e528d7DA14F32Cd21b55aFFa1FF7F873"
                 target="_blank"
                 rel="noreferrer"
                 className="underline underline-offset-2"
               >
-                Fork me
+                devorsmth.eth 
               </a>
-            </div>
-            <span>·</span>
-            <div>
-              Built with <HeartIcon className="inline-block h-4 w-4" /> at 🏰{" "}
+              {" "} using {" "}
               <a
-                href="https://buidlguidl.com/"
+                href="https://github.com/scaffold-eth/scaffold-eth-2"
                 target="_blank"
                 rel="noreferrer"
                 className="underline underline-offset-2"
               >
-                BuidlGuidl
+                Scaffold-Eth 2
               </a>
-            </div>
-            <span>·</span>
-            <div>
-              <a
-                href="https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA"
-                target="_blank"
-                rel="noreferrer"
-                className="underline underline-offset-2"
-              >
-                Support
-              </a>
+              {" "}🏗
             </div>
           </div>
         </ul>

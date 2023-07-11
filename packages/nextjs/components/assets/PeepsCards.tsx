@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from "react";
 import ReactPaginate from "react-paginate";
 import { 
-  useScaffoldContractRead,
-  useScaffoldContractWrite,
   useDeployedContractInfo
 } from "~~/hooks/scaffold-eth";
-import { useAccount, useProvider } from 'wagmi';
-import { BigNumber, ethers } from "ethers";
+import { useAccount } from 'wagmi';
 import { Spinner } from "~~/components/Spinner";
-import { Cards } from "./Cards";
+import { Card } from "./Card";
 
 export enum Status {
   KID = "Kid",
@@ -18,36 +15,22 @@ export enum Status {
   BURIED = "Buried",
 }
 
-export const Pagination = () => {
+export const PeepsCards = ({tokenIds, peepsOwned, allPeeps, owners, tokenURIs, whose} : any) => {
   const [itemOffset, setItemOffset] = useState(0);
   const [isLoadingPeepSvgs, setIsLoadingPeepSvgs] = useState(true);
   const [svgs, setSvgs] = useState<string[]>();
   const [offsetChanged, setOffsetChanged] = useState(false);
 
-  const { data: peeps } = useScaffoldContractRead({
-    contractName: "Peeps",
-    functionName: "getPeeps",
-  });
-
-  const { data: tokenURIs } = useScaffoldContractRead({
-    contractName: "Peeps",
-    functionName: "allTokenURI",
-  });
-
-  const { data: owners } = useScaffoldContractRead({
-    contractName: "Peeps",
-    functionName: "allOwners",
-  });
-
   const itemsPerPage = 3;
   const endOffset = itemOffset + itemsPerPage;
-  const currentItems = peeps?.slice().reverse().slice(itemOffset, endOffset);
-  const pageCount = Math.ceil(peeps?.length ? peeps?.length/itemsPerPage : 0);
+  let currentItems = [];
+  currentItems = peepsOwned?.slice().reverse().slice(itemOffset, endOffset);
+  const pageCount = Math.ceil(peepsOwned?.length ? peepsOwned?.length/itemsPerPage : 0);
 
   const handlePageClick = (event: any) => {
     let newOffset;
-    if (peeps !== undefined) {
-      newOffset = (event.selected * itemsPerPage) % peeps?.length;      
+    if (peepsOwned !== undefined) {
+      newOffset = (event.selected * itemsPerPage) % peepsOwned?.length;      
     } else {
       newOffset = 0;
     }
@@ -60,11 +43,13 @@ export const Pagination = () => {
   const { isLoading: isLoadingPeepsContract } = useDeployedContractInfo("Peeps");
 
   const getCard = (index: number) => {
-    if (!svgs || !peeps || !owners) return '';
-    const ind = peeps.length - index - itemOffset - 1;
-    return <Cards 
-      index={ind} 
-      peeps={peeps} 
+    if (!svgs || !peepsOwned) return '';
+    const ind = peepsOwned.length - index - itemOffset - 1;
+    return <Card 
+      index={ind}
+      tokenId={tokenIds[ind]} 
+      peeps={peepsOwned}
+      allPeeps={allPeeps}
       svgs={svgs} 
       owners={owners}
       offsetChanged={offsetChanged}
@@ -77,12 +62,12 @@ export const Pagination = () => {
       isLoadingPeepsContract || 
       !isConnected ||
       !tokenURIs ||
-      !peeps ||
-      !owners
+      !allPeeps
     ) return;
 
     let svgImages = [];
-    for (let i=0; i < tokenURIs.length; i++) {
+    for (let i=0; i < tokenURIs?.length; i++) {
+      if (!tokenURIs[i]) continue;
       const encodedData = tokenURIs[i].split(',')[1];
       const decodedData = Buffer.from(encodedData, 'base64').toString('utf-8');
       const jsonData = JSON.parse(decodedData);
@@ -92,22 +77,22 @@ export const Pagination = () => {
     }
     setSvgs(svgImages);
     setIsLoadingPeepSvgs(false);
-  }, [isLoadingPeepsContract, peeps, tokenURIs, isConnected, owners]);
+  }, [isLoadingPeepsContract, allPeeps, tokenURIs, isConnected]);
 
 return (
   <>
-  <div className="mx-auto mt-8">
+  <div className="mx-auto">
     <div className="flex items-center justify-center flex-row my-4">
-    <div className="flex items-center justify-center flex-col w-9/12 ">
-      <div className="mb-2 ml-2">
-        Array
-      </div>
-    <div className="flex flex-row">
+    <div className="flex items-center justify-center flex-col w-9/12">
+      <p className="text-xl mt-1 text-center">
+        {whose} peeps:
+      </p>
+    <div className="flex flex-col sm:flex-row">
       {!isLoadingPeepSvgs && 
        currentItems &&
        currentItems.length !== 0 &&
-       currentItems.map((arr, index) => (
-          <div className="my-2 mx-3 px-3 pt-3 bg-base-200">
+       currentItems.map((arr: any, index: number) => (
+          <div className="my-2 mx-3 px-3 bg-base-200">
             {getCard(index)}
           </div>
       ))}
@@ -136,7 +121,7 @@ return (
 
     <div>
     <div className="flex flex-row justify-center min-w-[280px]">
-      {currentItems && peeps && peeps.length > itemsPerPage &&
+      {currentItems && peepsOwned && peepsOwned.length > itemsPerPage &&
       <div className="flex flex-col items-center mt-5 min-w-[700px]">
         <ReactPaginate
           breakLabel="..."

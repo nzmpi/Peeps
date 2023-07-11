@@ -1,142 +1,247 @@
-import Link from "next/link";
 import type { NextPage } from "next";
 import { BigNumber, ethers } from "ethers";
 import React,{ useState, useEffect } from "react";
-import { BugAntIcon, MagnifyingGlassIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { WalletIcon } from "@heroicons/react/24/outline";
 import { MetaHeader } from "~~/components/MetaHeader";
 import { 
   useScaffoldContractRead,
-  useDeployedContractInfo
+  useDeployedContractInfo,
+  useScaffoldContractWrite
 } from "~~/hooks/scaffold-eth";
-import { useAccount, useProvider } from 'wagmi';
-import { Pagination } from "~~/components/assets/Pagination";
-
-interface Metadata {
-  name: string,
-  image: string
-}
+import { useAccount } from 'wagmi';
+import { PeepsCards } from "~~/components/assets/PeepsCards";
+import { Spinner } from "~~/components/Spinner";
 
 const Home: NextPage = () => {
-  const [metadata, setMetadata] = useState<Metadata>()
-  const [svgData, setSvgData] = useState([{svg: "", name: ""}]);
-  const [usersSVG, setUsersSVG] = useState([{svg: "", name: ""}]);
-  const [tokenId, setTokenId] = useState(BigNumber.from(1));
-  const [check, setCheck] = useState<any>();
-  const [attrib, setAttrib] = useState<any>();
+  const [isOnlyYoursActive, setIsOnlyYoursActive] = useState(false);
+  const [ownedTokenIds, setOwnedTokenIds] = useState<any[]>();
+  const [peepsOwned, setPeepsOwned] = useState<any[]>();
+  const [ownedtokenURIs, setOwnedtokenURIs] = useState<any[]>();
 
-  const svgContainerStyles = {
-    display: 'inline-block',
-    transform: 'scale(0.7)',
-    transformOrigin: 'top left',
-  };
+  const {address: connectedAccount} = useAccount();
+  const { isLoading: isLoadingPeepsContract } = useDeployedContractInfo("Peeps");
 
-  const { data: Peeps } = useScaffoldContractRead({
+  const { data: mintingFee } = useScaffoldContractRead({
+    contractName: "Peeps",
+    functionName: "mintingFee",
+  });
+
+  const { data: peeps } = useScaffoldContractRead({
     contractName: "Peeps",
     functionName: "getPeeps",
   });
 
-  const { data: Time } = useScaffoldContractRead({
+  const { data: owners } = useScaffoldContractRead({
     contractName: "Peeps",
-    functionName: "getTime",
+    functionName: "allOwners",
   });
 
-  const {address: connectedAccount, isConnected} = useAccount()
-  let provider = useProvider();
+  const { data: tokenURIs } = useScaffoldContractRead({
+    contractName: "Peeps",
+    functionName: "allTokenURI",
+  });
 
-  const { data: peepsContract, isLoading: isLoadingPeepsContract } = useDeployedContractInfo("Peeps");
+  const { data: mintedPeeps } = useScaffoldContractRead({
+    contractName: "Peeps",
+    functionName: "getMintedPeeps",
+  });
 
-  /*useEffect(() => {
-    if(isLoadingPeepsContract || !isConnected) return;
-    
-    (async () => {
-      const peeps = new ethers.Contract(peepsContract?.address || "", peepsContract?.abi || "", provider)
+  const { data: funds } = useScaffoldContractRead({
+    contractName: "Peeps",
+    functionName: "funds",
+    args: [connectedAccount],
+  });
 
-      const tokenURI = await peeps.tokenURI(tokenId);
-      const encodedData = tokenURI.split(',')[1];
-      const decodedData = Buffer.from(encodedData, 'base64').toString('utf-8');
-      const jsonData = JSON.parse(decodedData);
-      const encodedImage = jsonData.image.split(',')[1];
-      const decodedImage = Buffer.from(encodedImage, 'base64').toString('utf-8');
-      setAttrib(decodedImage);
+  const { writeAsync: mint, isLoading: mintLoading } = useScaffoldContractWrite({
+    contractName: "Peeps",
+    functionName: "mint",
+    value: ethers.utils.formatEther(mintingFee?.toString() || 0),
+  });
 
-      let svgs = [];
-      let len = 1;
-      if (Peeps) len = Peeps?.length; 
-      for (let i=0; i<len; ++i) {
-        try {
-          const svg = await peeps.tokenURI(BigNumber.from(i+1));
-          svgs.push({svg: svg, name: Peeps?.[i].peepName || ""});
-        } catch(error) {
-          console.error(error)
-        }
+  const { writeAsync: withdrawFunds, isLoading: withdrawFundsLoading } = useScaffoldContractWrite({
+    contractName: "Peeps",
+    functionName: "withdrawFunds",
+  });
+
+  const tokenIds = Array.from({length: peeps?.length || 0}, (_, i) => i + 1);
+
+  const getPeepsAlive = () => {
+    let peepsAlive = 0;
+    if (!mintedPeeps) return peepsAlive;
+
+    let peep;
+    let id;
+    const timeNow = Date.now()/1000;
+    for (let i=0; i < 20; i++) {
+      id = mintedPeeps?.[i].toNumber();
+      if (id === 0) continue;
+      peep = peeps?.[id-1];
+      if (peep?.oldTime === undefined) continue;
+      if (timeNow < peep?.oldTime) {
+        peepsAlive++;
       }
-      setSvgData(svgs);
-      let pt = await peeps.getOwnedPeeps(connectedAccount);
-      svgs = [];
-      len = 1;
-      if (pt) len = pt?.length; 
-      for (let i=0; i<len; ++i) {
-        try {
-          const svg = await peeps.tokenURI(BigNumber.from(pt?.[i]));
-          svgs.push({svg: svg, name: Peeps?.[pt?.[i]-1].peepName || ""});
-        } catch(error) {
-          console.error(error)
-        }
+    }
+    return peepsAlive;
+  }
+
+  const getEarliestDeath = () => {
+    if (!mintedPeeps) return "Loading...";
+    let id = mintedPeeps?.[0].toNumber();
+    if (id === 0) return "Loading...";
+    let peep = peeps?.[id-1];
+    let earliestDeath = peep?.oldTime;
+    if (earliestDeath === undefined) return "Loading...";
+    for (let i=1; i < 20; i++) {
+      id = mintedPeeps?.[i].toNumber();
+      if (id === 0) continue;
+      peep = peeps?.[id-1];
+      if (peep?.oldTime === undefined) continue;
+      if (earliestDeath > peep?.oldTime) {
+        earliestDeath = peep?.oldTime;
       }
-      setUsersSVG(svgs);
-    })()
-  }, [isLoadingPeepsContract, Peeps])*/
-
-  const getSVG = (data: any) => {
-    return (
-    <div>
-    <h1>{data.name}</h1>
-    <div style={svgContainerStyles}>      
-      <div 
-        dangerouslySetInnerHTML={{ __html: data.svg }}
-        style={{ width: 200, height: 290 }}
-      />
-    </div>
-    </div>);
+    }
+    return getTime(earliestDeath);
   }
 
-  const getCheck = () => {
-    return (
-    <div>
-    <div style={svgContainerStyles}>      
-      <div 
-        dangerouslySetInnerHTML={{ __html: check }}
-        style={{ width: 200, height: 290 }}
-      />
-    </div>
-    </div>);
-  }
+  const getTime = (time: number) : string => {
+    var a = new Date(time * 1000);
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var year = a.getFullYear();
+    var month = months[a.getMonth()];
+    var date = a.getDate() < 10 ? '0' + a.getDate() : a.getDate();
+    var hour = a.getHours() < 10 ? '0' + a.getHours() : a.getHours();
+    var min = a.getMinutes() < 10 ? '0' + a.getMinutes() : a.getMinutes();
+    var sec = a.getSeconds() < 10 ? '0' + a.getSeconds() : a.getSeconds();
+    var formattedTime = hour + ':' + min + ':' + sec + ' ' + date + ' ' + month + ' ' + year ;
+    return formattedTime;
+  };
 
-  const getJson = () => {
-    if (attrib)
-    return (
-    <div>
-      <div style={svgContainerStyles}>      
-      <div 
-
-        style={{ width: 200, height: 290 }}
-      >
-        {attrib}
-      </div>
-    </div>
-    </div>);
-  }
+  const toggleRadio = () => {
+    setIsOnlyYoursActive(!isOnlyYoursActive);
+  };
 
   useEffect(() => {
-    //getDetails();
-  }, [isLoadingPeepsContract, Peeps])
+    if (!owners || !peeps || !tokenURIs) return;
+    let tokenIdsTemp = [];
+    let peepsTemp = [];
+    let tokenURIsTemp = [];
+    for (let i=0; i < owners?.length; i++) {
+      if (owners[i] === connectedAccount) {
+        peepsTemp.push(peeps[i]);
+        tokenURIsTemp.push(tokenURIs[i]);
+        tokenIdsTemp.push(i+1);
+      }
+    }
+    setPeepsOwned(peepsTemp);
+    setOwnedtokenURIs(tokenURIsTemp);
+    setOwnedTokenIds(tokenIdsTemp);
+  }, [isLoadingPeepsContract, peeps, connectedAccount, isOnlyYoursActive, tokenURIs]);
 
   return (
     <>
-      <MetaHeader />
-      <div className="flex items-center flex-col flex-grow pt-10">
+      <MetaHeader/>
+      <div className="flex items-center flex-col flex-grow pt-5">
+        <h2 className="text-[1.8rem] md:text-[2.5rem] text-center h-16 md:h-20">Mint a unique Peep! <br/>
+        They will grow, get old and die!
+        </h2>        
+        <p className="text-md md:text-xl mt-2 text-center max-w-lg">
+          There {getPeepsAlive() === 1 ? "is" : "are"} {getPeepsAlive()} minted peep{getPeepsAlive() === 1 ? "" : "s"} alive. You can mint {20 - getPeepsAlive()} more
+        </p>
+        {getPeepsAlive() === 20 &&
+        (
+        <div className="tooltip tooltip-info" data-tip={`The earliest death: ${getEarliestDeath()}`}>
+        <button 
+          className="btn" 
+          disabled={true}
+        >           
+          mint a Peep for {ethers.utils.formatEther(mintingFee || 0)} MATIC 
+        </button>
+        </div> 
+        )}
+        {getPeepsAlive() < 20 &&
+        (
+        <button 
+          className="btn btn-success " 
+          disabled={mintLoading || isLoadingPeepsContract}
+          onClick={async () => await mint()}
+        >           
+        {(mintLoading || isLoadingPeepsContract) && (
+        <>
+          <Spinner/>
+        </>
+        )}
+        {(!mintLoading && !isLoadingPeepsContract) && (
+        <>        
+          mint a Peep for {ethers.utils.formatEther(mintingFee || 0)} MATIC       
+        </>
+        )}
+        </button>
+        )}
 
-        <Pagination/>       
+        <div className="mb-3 mt-10 justify-center items-center flex flex-row items-start gap-5">
+          <input
+            type="radio" 
+            name="AllOrYours" 
+            className="radio flex border-2 border-base-300" 
+            value="All" 
+            checked={!isOnlyYoursActive}
+            onChange={toggleRadio}
+          />
+          <label>All</label>
+          <input 
+            type="radio" 
+            name="AllOrYours" 
+            className="radio flex border-2 border-base-300" 
+            value="Yours" 
+            checked={isOnlyYoursActive}
+            onChange={toggleRadio}
+          />
+          <label>Yours</label>
+        </div>
+
+        {!isOnlyYoursActive &&
+        (
+        <PeepsCards tokenIds={tokenIds} peepsOwned={peeps} allPeeps={peeps} owners={owners} tokenURIs={tokenURIs} whose="All"/>
+        )}
+
+        {isOnlyYoursActive &&
+        (
+        <PeepsCards tokenIds={ownedTokenIds} peepsOwned={peepsOwned} allPeeps={peeps} owners={owners} tokenURIs={ownedtokenURIs} whose="Your"/>
+        )}
+
+        {funds &&
+        funds.gt(0) &&
+        (
+        <div>
+        <form className="w-[370px] bg-green-300 border-green-400 rounded-3xl shadow-xl p-2 px-7 py-5 mt-10">
+        <div className="p-2 py-1"> </div>
+          <span className="p-2 text-lg font-bold"> Available funds: </span>
+          <span className="text-lg text-right min-w-[2rem]"> 
+          {ethers.utils.formatEther(funds)} MATIC
+          </span>    
+
+          <div className="mt-3 flex flex-col items-center py-2">
+          <button
+            type="button"
+            disabled={withdrawFundsLoading || isLoadingPeepsContract}             
+            onClick={async () => {
+              await withdrawFunds();
+            }}
+            className={"btn btn-success w-1/3 flex items-center"}
+          >
+            {(withdrawFundsLoading || isLoadingPeepsContract) && (
+            <>
+              <Spinner/>
+            </>
+            )}
+            {(!withdrawFundsLoading && !isLoadingPeepsContract) && (
+              <WalletIcon className="w-8 h-8 mt-0.5"/>
+            )} 
+          </button>
+          </div> 
+        </form>
+        </div>
+        )}   
         
       </div>
     </>

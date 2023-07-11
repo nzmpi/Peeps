@@ -11,6 +11,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   InformationCircleIcon,
+  EllipsisHorizontalIcon
 } from "@heroicons/react/24/outline";
 import Modal from 'react-modal';
 
@@ -22,28 +23,56 @@ export enum Status {
   BURIED = "Buried",
 }
 
-export const Cards = ({index, peeps, svgs, owners, offsetChanged, setOffsetChanged} : any) => {
+export const Card = ({index, tokenId, peeps, allPeeps, svgs, owners, offsetChanged, setOffsetChanged} : any) => {
   const [expanded, setExpanded] = useState(false);
-  const [tokenId, setTokenId] = useState(BigNumber.from(0));
   const [partnerTokenId, setPartnerTokenId] = useState("");
   const [newName, setNewName] = useState("");
   const [isModalOpen, setIsModalOpen] = useState([false,false,false]);
+  const [isModalERC721Open, setIsModalERC721Open] = useState([false,false,false]);
+  const [addressFrom, setAddressFrom] = useState("");
+  const [addressTo, setAddressTo] = useState("");
+
+  const {address: connectedAccount} = useAccount();
 
   const { data: breedingFee } = useScaffoldContractRead({
     contractName: "Peeps",
     functionName: "breedingFee",
   });
 
+  const { data: getApproved } = useScaffoldContractRead({
+    contractName: "Peeps",
+    functionName: "getApproved",
+    args: [BigNumber.from(tokenId || 0)],
+  });
+
+  const { data: isApprovedForAll } = useScaffoldContractRead({
+    contractName: "Peeps",
+    functionName: "isApprovedForAll",
+    args: [owners[tokenId-1], connectedAccount],
+  });
+
   const { writeAsync: changeName, isLoading: changeNameLoading } = useScaffoldContractWrite({
     contractName: "Peeps",
     functionName: "changeName",
-    args: [BigNumber.from(tokenId), newName],
+    args: [BigNumber.from(tokenId || 0), newName],
   });
+
+  const { writeAsync: approve, isLoading: approveLoading } = useScaffoldContractWrite({
+    contractName: "Peeps",
+    functionName: "approve",
+    args: [addressTo, BigNumber.from(tokenId || 0)],
+  })
+
+  const { writeAsync: safeTransferFrom, isLoading: safeTransferFromLoading } = useScaffoldContractWrite({
+    contractName: "Peeps",
+    functionName: "safeTransferFrom",
+    args: [addressFrom, addressTo, BigNumber.from(tokenId || 0)],
+  })
 
   const { writeAsync: breed, isLoading: breedLoading } = useScaffoldContractWrite({
     contractName: "Peeps",
     functionName: "breed",
-    args: [BigNumber.from(tokenId), 
+    args: [BigNumber.from(tokenId  || 0), 
       partnerTokenId === "" ? BigNumber.from(0) : BigNumber.from(partnerTokenId)],
     value: ethers.utils.formatEther(breedingFee?.toString() || 0),
   });
@@ -51,25 +80,35 @@ export const Cards = ({index, peeps, svgs, owners, offsetChanged, setOffsetChang
   const { writeAsync: giftHat, isLoading: giftHatLoading } = useScaffoldContractWrite({
     contractName: "Peeps",
     functionName: "giftHat",
-    args: [BigNumber.from(tokenId), 
+    args: [BigNumber.from(tokenId || 0), 
       partnerTokenId === "" ? BigNumber.from(0) : BigNumber.from(partnerTokenId)],
   });
 
   const { writeAsync: buryPeep, isLoading: buryPeepLoading } = useScaffoldContractWrite({
     contractName: "Peeps",
     functionName: "buryPeep",
-    args: [BigNumber.from(tokenId)],
+    args: [BigNumber.from(tokenId || 0)],
   });
 
   const { writeAsync: toggleBreeding, isLoading: toggleBreedingLoading } = useScaffoldContractWrite({
     contractName: "Peeps",
     functionName: "toggleBreeding",
-    args: [BigNumber.from(tokenId)],
+    args: [BigNumber.from(tokenId || 0)],
   });
 
   const changeExpanding = () => {
     setExpanded(!expanded);
   };
+
+  const getStatus = (index: number) => {
+    if (!peeps[index]) return '';
+    const timeNow = Date.now()/1000;
+    if (peeps[index].isBuried === true) return Status.BURIED;
+    else if (timeNow < peeps[index].kidTime) return Status.KID;
+    else if (timeNow < peeps[index].adultTime) return Status.ADULT;
+    else if (timeNow < peeps[index].oldTime) return Status.OLD;
+    else return Status.DEAD;
+  }
 
   const getTime = (index: number) : string => {
     if (!peeps) return '';
@@ -115,7 +154,6 @@ export const Cards = ({index, peeps, svgs, owners, offsetChanged, setOffsetChang
     else return "";
 
     time -= Math.floor(Date.now()/1000);
-
     var months = Math.floor(time/2592000);
     time %= 2592000;
     var days = Math.floor(time/86400);
@@ -141,16 +179,6 @@ export const Cards = ({index, peeps, svgs, owners, offsetChanged, setOffsetChang
     }
   };
 
-  const getStatus = (index: number) => {
-    if (!peeps[index]) return '';
-    const timeNow = Date.now()/1000;
-    if (peeps[index].isBuried === true) return Status.BURIED;
-    else if (timeNow < peeps[index].kidTime) return Status.KID;
-    else if (timeNow < peeps[index].adultTime) return Status.ADULT;
-    else if (timeNow < peeps[index].oldTime) return Status.OLD;
-    else return Status.DEAD;
-  }
-
   const getNextStage = (index: number) => {
     const timeNow = Date.now()/1000;
     if (peeps[index].isBuried === true) return "";
@@ -174,13 +202,13 @@ export const Cards = ({index, peeps, svgs, owners, offsetChanged, setOffsetChang
   }
 
   const getGrandkids = () => {
-    if (!tokenId.toNumber()) return '';
+    if (!tokenId) return '';
     let grandkids;
     let grandkidsFinal:string[] = [];
-    const kids = peeps[tokenId.toNumber()-1].children;
+    const kids = allPeeps[tokenId-1].children;
     if (kids.length === 0) return "None";
     for (let i = 0; i < kids.length; i++) {
-      grandkids = peeps[kids[i].toNumber()-1].children;
+      grandkids = allPeeps[kids[i].toNumber()-1].children;
       if (grandkids.length === 0) continue;
       for (let j = 0; j < grandkids.length; j++) {
         if (grandkidsFinal.includes(grandkids[j].toString())) continue;
@@ -192,12 +220,12 @@ export const Cards = ({index, peeps, svgs, owners, offsetChanged, setOffsetChang
   }
 
   const isGrandkid = (id: string) => {
-    if (!tokenId.toNumber()) return false;
+    if (!tokenId) return false;
     let grandkids;
-    const kids = peeps[tokenId.toNumber()-1].children;
+    const kids =  allPeeps[tokenId-1].children;
     if (kids.length === 0) return false;
     for (let i = 0; i < kids.length; i++) {
-      grandkids = peeps[kids[i].toNumber()-1].children;
+      grandkids =  allPeeps[kids[i].toNumber()-1].children;
       if (grandkids.length === 0) continue;
       for (let j = 0; j < grandkids.length; j++) {
         if (grandkids[j].toString() === id) return true;
@@ -209,14 +237,14 @@ export const Cards = ({index, peeps, svgs, owners, offsetChanged, setOffsetChang
 
   const closeModal = () => {
     setIsModalOpen(prevState => prevState.map(() => false));
+    setIsModalERC721Open(prevState => prevState.map(() => false));
     setNewName("");
-    setTokenId(BigNumber.from(0));
     setPartnerTokenId("");
+    setAddressFrom("");
+    setAddressTo("");
   }
 
-  const openModal = (index: number) => {
-    setTokenId(BigNumber.from(index+1));
-
+  const openModal = async (index: number) => {
     if (getStatus(index) === Status.KID) {
       setIsModalOpen(prevState => prevState.map((item, idx) => idx === 0 ? true : false));
     } else if (getStatus(index) === Status.ADULT) {
@@ -224,12 +252,19 @@ export const Cards = ({index, peeps, svgs, owners, offsetChanged, setOffsetChang
     } else if (getStatus(index) === Status.OLD) {
       setIsModalOpen(prevState => prevState.map((item, idx) => idx === 2 ? true : false));
     } else if (peeps[index].isBuried === false) {
-      buryPeep();
+      await buryPeep();
     }
   }
 
-  const changeBreedingAllowance = () => {
-    toggleBreeding();
+  const openModalERC721 = (index: number) => {
+    setIsModalERC721Open(prevState => prevState.map((item, idx) => idx === index ? true : false));
+    if (index === 1) {
+      setAddressFrom(connectedAccount || "");
+    }
+  }
+
+  const changeBreedingAllowance = async () => {
+    await toggleBreeding();
   }
 
   const arrayToString = (arr: any[]) => {
@@ -243,15 +278,16 @@ export const Cards = ({index, peeps, svgs, owners, offsetChanged, setOffsetChang
   }
 
   const isBreedingAllowed = (index: number) => {
-    if (getStatus(index) === Status.ADULT &&
+    if (allPeeps[index] === undefined) return false;
+    const timeNow = Date.now()/1000;
+    if (timeNow < allPeeps[index].adultTime &&
+      timeNow > allPeeps[index].kidTime &&
       (owners[index] === connectedAccount ||
-       peeps[index].breedingAllowed === true) &&       
-       peeps[index].breedCount < 3 && 
-       index !== tokenId.toNumber()-1) return true;
+       allPeeps[index].breedingAllowed === true) &&       
+       allPeeps[index].breedCount < 3 && 
+       index !== tokenId-1) return true;
     else return false;
   }
-
-  const {address: connectedAccount} = useAccount();
 
   const svgContainerStyles = {
     display: 'inline-block',
@@ -267,7 +303,7 @@ export const Cards = ({index, peeps, svgs, owners, offsetChanged, setOffsetChang
 return (
   <>
   <div>
-    <div className={`flex flex-col`}>
+    <div className="flex flex-col">
       <div style={svgContainerStyles}>      
         <div 
           dangerouslySetInnerHTML={{ __html: svgs[index] }}
@@ -288,7 +324,7 @@ return (
         <span 
           className="text-lg text-right"  
           style={{ marginRight: '2.3rem' }}> 
-          #{index+1} 
+          #{tokenId} 
         </span>
         <button 
           className="btn btn-success btn-sm" 
@@ -311,7 +347,7 @@ return (
         <span 
           className="text-lg text-right"  
           style={{ marginRight: '2.3rem' }}> 
-          #{index+1} 
+          #{tokenId} 
         </span>
         <button 
           className="btn btn-success btn-sm" 
@@ -319,19 +355,19 @@ return (
           onClick={() => changeExpanding()}>
           <ChevronUpIcon className="h-4 w-6"/>
         </button>
-      </div>    
-      <div className="flex-col items-center">     
-      
+      </div>  
+
+      <div className="flex-col items-center">       
         <div className="p-2 py-1"> </div>
         <span className="p-2 text-lg font-bold"> Name: </span>
         <span className="text-lg text-right min-w-[2rem]"> 
           {getFittingName(peeps[index].peepName)} 
         </span>
-
+        
         <div className="p-2 py-0"> </div>
         <div className="flex flex-row">
         <span className="p-2 text-lg font-bold"> Owner: </span>
-          <Address address={owners[index]}/>
+          <Address address={owners[tokenId-1]}/>
         </div>
 
         <div className="p-2 py-0"> </div>
@@ -365,7 +401,7 @@ return (
         
         <div className="p-2 py-1"> </div>
         {getButtonName(index) !== "" &&
-         owners[index] === (connectedAccount) &&
+         owners[tokenId-1] === (connectedAccount) &&
         (
         <div className="flex items-center justify-center"> 
         <button 
@@ -373,8 +409,7 @@ return (
            (getStatus(index) === Status.ADULT &&
            peeps[index].breedCount > 2)}
           className="btn btn-success btn-sm" 
-          onClick={() => openModal(index)}
-          onMouseEnter={() => setTokenId(BigNumber.from(index+1))}
+          onClick={async () => await openModal(index)}
         >
         {buryPeepLoading && (
           <>
@@ -404,13 +439,12 @@ return (
           <span className="p-2 text-md font-bold"> 3rd parties:</span>
         </div>
         
-        {owners[index] === connectedAccount &&
+        {owners[tokenId-1] === connectedAccount &&
         (        
         <button 
           disabled={toggleBreedingLoading}
           className={`btn ${peeps[index].breedingAllowed ? "btn-success" : "btn-warning"} btn-sm mx-2 min-w-[8rem]`}
-          onClick={() => changeBreedingAllowance()}
-          onMouseEnter={() => setTokenId(BigNumber.from(index+1))}
+          onClick={async () => await changeBreedingAllowance()}
         >
         {toggleBreedingLoading && (
           <>
@@ -424,7 +458,7 @@ return (
         )}          
         </button> )}
 
-        {owners[index] !== connectedAccount &&
+        {owners[tokenId-1] !== connectedAccount &&
         ( 
         <span className="p-2 mx-1"> 
           {peeps[index].breedingAllowed ? <span className="text-sm font-bold px-6 py-1.5 rounded-[1rem] bg-teal-300 shadow-md">ALLOWED</span> : <span className="text-sm font-bold px-6 py-1.5 rounded-[1rem] bg-yellow-400 shadow-md">NOT ALLOWED</span>}
@@ -432,8 +466,54 @@ return (
         )}
 
         </div> )}
-
       </div>
+
+      <div 
+        className="dropdown dropdown-bottom"
+        style={{ marginRight: '-12rem' }}
+      >
+        <button 
+          className="btn btn-success btn-sm">
+          <EllipsisHorizontalIcon className="h-4 w-6"/>
+        </button>          
+        <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 w-50 h-50 gap-1">
+          <li>
+            <button 
+              disabled={owners[tokenId-1] !== connectedAccount && 
+                !isApprovedForAll}
+              className="btn btn-success btn-md shadow-md" 
+              onClick={() => openModalERC721(0)}
+            >
+              Approve         
+            </button>
+          </li>
+
+          <li>
+            <button 
+              disabled={owners[tokenId-1] !== connectedAccount &&
+                getApproved !== connectedAccount && 
+                !isApprovedForAll}
+              className="btn btn-success btn-md shadow-md" 
+              onClick={() => openModalERC721(1)}
+            >
+              Transfer         
+            </button>
+          </li>
+
+          <li>
+            <button 
+              disabled={owners[tokenId-1] !== connectedAccount &&
+                getApproved !== connectedAccount && 
+                !isApprovedForAll}
+              className="btn btn-success btn-md shadow-md" 
+              onClick={() => openModalERC721(2)}
+            >
+              Transfer from         
+            </button>
+          </li>
+        </ul>
+        </div>
+
       </div>      
       )}
     </div>
@@ -445,13 +525,13 @@ return (
       className="flex flex-col absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-green-300 shadow-md rounded-3xl px-6 lg:px-8 py-6 lg:py-10 gap-4"
     >
       <span className="font-bold text-lg">
-        Change name of {peeps[tokenId.toNumber()-1]?.peepName}
+        Change name of {peeps[tokenId-1]?.peepName}
       </span>
       <InputBase placeholder="New name" value={newName} onChange={setNewName}/>
       <button 
         disabled={changeNameLoading || 
           newName === ""}
-        className="btn btn-success btn-sm mt-3.0" onClick={() => changeName()}>
+        className="btn btn-success btn-sm mt-3.0" onClick={async () => await changeName()}>
       {changeNameLoading && (
       <>
         <Spinner/>
@@ -475,7 +555,7 @@ return (
       className="flex flex-col absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-green-300 shadow-md rounded-3xl px-6 lg:px-8 py-6 lg:py-10 gap-4"
     >
       <span className="font-bold text-lg">
-        Breed {peeps[tokenId.toNumber()-1]?.peepName} for {ethers.utils.formatEther(breedingFee || 0)} MATIC with
+        Breed {peeps[tokenId-1]?.peepName} for {ethers.utils.formatEther(breedingFee || 0)} MATIC with
       </span>
       <InputBase placeholder="Id" value={partnerTokenId} 
       onChange={value => {
@@ -487,7 +567,7 @@ return (
       <button 
         disabled={breedLoading || 
           !isBreedingAllowed(Number(partnerTokenId)-1)}
-        className="btn btn-success btn-sm mt-3.0" onClick={() => breed()}>
+        className="btn btn-success btn-sm mt-3.0" onClick={async () => await breed()}>
       {breedLoading && (
       <>
         <Spinner/>
@@ -529,13 +609,141 @@ return (
       <button 
         disabled={giftHatLoading ||
           !isGrandkid(partnerTokenId)}
-        className="btn btn-success btn-sm mt-3.0" onClick={() => giftHat()}>
+        className="btn btn-success btn-sm mt-3.0" onClick={async () => await giftHat()}>
       {giftHatLoading && (
       <>
         <Spinner/>
       </>
       )}
       {!giftHatLoading && (
+      <>
+        Confirm
+      </>
+      )}
+      </button>
+      <button className="btn btn-warning btn-sm" onClick={() => closeModal()}>
+        Cancel
+      </button>
+    </Modal>
+
+    <Modal
+      isOpen={isModalERC721Open[0]}
+      onRequestClose={closeModal}
+      contentLabel="Modal ERC721 1"
+      className="flex flex-col absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-green-300 shadow-md rounded-3xl px-6 lg:px-8 py-6 lg:py-10 gap-4"
+    >      
+      <div className="flex flex-row">
+        <span className="font-bold text-lg">
+          Approve {peeps[tokenId-1]?.peepName} to
+        </span>
+      </div>
+      <InputBase placeholder="Address" value={addressTo} 
+      onChange={value => {
+        if (value === "") {
+          setAddressTo("");
+        } else   
+          setAddressTo(value);
+      }}/>
+      <button 
+        disabled={approveLoading || 
+          !ethers.utils.isAddress(addressTo)}
+        className="btn btn-success btn-sm mt-3.0" onClick={async () => await approve()}>
+      {approveLoading && (
+      <>
+        <Spinner/>
+      </>
+      )}
+      {!approveLoading && (
+      <>
+        Confirm
+      </>
+      )}
+      </button>
+      <button className="btn btn-warning btn-sm" onClick={() => closeModal()}>
+        Cancel
+      </button>
+    </Modal>
+
+    <Modal
+      isOpen={isModalERC721Open[1]}
+      onRequestClose={closeModal}
+      contentLabel="Modal ERC721 2"
+      className="flex flex-col absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-green-300 shadow-md rounded-3xl px-6 lg:px-8 py-6 lg:py-10 gap-4"
+    >      
+      <div className="flex flex-row">
+        <span className="font-bold text-lg">
+          Transfer {peeps[tokenId-1]?.peepName} to
+        </span>
+      </div>
+      <InputBase placeholder="Address" value={addressTo} 
+      onChange={value => {
+        if (value === "") {
+          setAddressTo("");
+        } else   
+          setAddressTo(value);
+      }}/>
+      <button 
+        disabled={safeTransferFromLoading || 
+          !ethers.utils.isAddress(addressTo) ||
+          !ethers.utils.isAddress(addressFrom)}
+        className="btn btn-success btn-sm mt-3.0" onClick={async () => await safeTransferFrom()}>
+      {safeTransferFromLoading && (
+      <>
+        <Spinner/>
+      </>
+      )}
+      {!safeTransferFromLoading && (
+      <>
+        Confirm
+      </>
+      )}
+      </button>
+      <button className="btn btn-warning btn-sm" onClick={() => closeModal()}>
+        Cancel
+      </button>
+    </Modal>
+
+    <Modal
+      isOpen={isModalERC721Open[2]}
+      onRequestClose={closeModal}
+      contentLabel="Modal ERC721 3"
+      className="flex flex-col absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-green-300 shadow-md rounded-3xl px-6 lg:px-8 py-6 lg:py-10 gap-4"
+    >      
+      <div className="flex flex-row">
+        <span className="font-bold text-lg">
+          Transfer {peeps[tokenId-1]?.peepName} from
+        </span>
+      </div>
+      <InputBase placeholder="Address" value={addressFrom} 
+      onChange={value => {
+        if (value === "") {
+          setAddressFrom("");
+        } else   
+          setAddressFrom(value);
+      }}/>
+      <div className="flex flex-row">
+        <span className="font-bold text-lg">
+          to
+        </span>
+      </div>
+      <InputBase placeholder="Address" value={addressTo} 
+      onChange={value => {
+        if (value === "") {
+          setAddressTo("");
+        } else   
+          setAddressTo(value);
+      }}/>
+      <button 
+        disabled={safeTransferFromLoading || 
+          !ethers.utils.isAddress(addressTo) ||
+          !ethers.utils.isAddress(addressFrom)}
+        className="btn btn-success btn-sm mt-3.0" onClick={async () => await safeTransferFrom()}>
+      {safeTransferFromLoading && (
+      <>
+        <Spinner/>
+      </>
+      )}
+      {!safeTransferFromLoading && (
       <>
         Confirm
       </>

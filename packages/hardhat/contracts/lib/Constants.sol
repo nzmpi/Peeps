@@ -11,5 +11,5 @@ library Constants {
   uint256 constant NUMBER_OF_HATS = 3;
   uint256 constant kidTime_MIN = 1 minutes;//2 hours;
   uint256 constant adultTime_MIN = 10 minutes;//2 weeks;
-  uint256 constant oldTime_MIN = 1 minutes;//10 hours;
+  uint256 constant oldTime_MIN = 10 minutes;//10 hours;
 }
