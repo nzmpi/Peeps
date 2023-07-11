@@ -13,7 +13,7 @@ import {
   InformationCircleIcon,
   EllipsisHorizontalIcon
 } from "@heroicons/react/24/outline";
-import Modal from 'react-modal';
+import Modal from "react-modal";
 import { AddressInput } from "../scaffold-eth";
 
 export enum Status {

@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+pragma solidity 0.8.19;
 
 library Constants {  
   uint256 constant MAX_COLOR = type(uint24).max; // 0xffffff
