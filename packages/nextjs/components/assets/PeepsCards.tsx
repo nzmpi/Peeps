@@ -109,15 +109,17 @@ return (
     </div>
     </div>
   
-    {currentItems &&
-       currentItems.length === 0 &&
-       (
+    {
+      currentItems &&
+      currentItems.length === 0 &&
+      !isLoadingPeepSvgs &&
+    (
         <div className="flex flex-row justify-center">
         <span className="font-bold text-md">
         No Peeps!
         </span>
         </div>
-      )}
+    )}
 
     <div>
     <div className="flex flex-row justify-center min-w-[280px]">

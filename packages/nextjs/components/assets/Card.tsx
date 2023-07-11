@@ -23,7 +23,7 @@ export enum Status {
   BURIED = "Buried",
 }
 
-export const Card = ({index, tokenId, peeps, allPeeps, svgs, owners, offsetChanged, setOffsetChanged} : any) => {
+export const Card = ({index, peeps, tokenId, allPeeps, svgs, owners, offsetChanged, setOffsetChanged} : any) => {
   const [expanded, setExpanded] = useState(false);
   const [partnerTokenId, setPartnerTokenId] = useState("");
   const [newName, setNewName] = useState("");
@@ -32,7 +32,7 @@ export const Card = ({index, tokenId, peeps, allPeeps, svgs, owners, offsetChang
   const [addressFrom, setAddressFrom] = useState("");
   const [addressTo, setAddressTo] = useState("");
 
-  const {address: connectedAccount} = useAccount();
+  const {address: signer} = useAccount();
 
   const { data: breedingFee } = useScaffoldContractRead({
     contractName: "Peeps",
@@ -48,7 +48,7 @@ export const Card = ({index, tokenId, peeps, allPeeps, svgs, owners, offsetChang
   const { data: isApprovedForAll } = useScaffoldContractRead({
     contractName: "Peeps",
     functionName: "isApprovedForAll",
-    args: [owners[tokenId-1], connectedAccount],
+    args: [owners[tokenId-1], signer],
   });
 
   const { writeAsync: changeName, isLoading: changeNameLoading } = useScaffoldContractWrite({
@@ -259,7 +259,7 @@ export const Card = ({index, tokenId, peeps, allPeeps, svgs, owners, offsetChang
   const openModalERC721 = (index: number) => {
     setIsModalERC721Open(prevState => prevState.map((item, idx) => idx === index ? true : false));
     if (index === 1) {
-      setAddressFrom(connectedAccount || "");
+      setAddressFrom(signer || "");
     }
   }
 
@@ -282,7 +282,7 @@ export const Card = ({index, tokenId, peeps, allPeeps, svgs, owners, offsetChang
     const timeNow = Date.now()/1000;
     if (timeNow < allPeeps[index].adultTime &&
       timeNow > allPeeps[index].kidTime &&
-      (owners[index] === connectedAccount ||
+      (owners[index] === signer ||
        allPeeps[index].breedingAllowed === true) &&       
        allPeeps[index].breedCount < 3 && 
        index !== tokenId-1) return true;
@@ -299,6 +299,10 @@ export const Card = ({index, tokenId, peeps, allPeeps, svgs, owners, offsetChang
     setExpanded(false);
     setOffsetChanged(false);
   }, [offsetChanged]);
+
+  useEffect(() => {
+    closeModal();
+  }, [allPeeps]);
 
 return (
   <>
@@ -401,7 +405,8 @@ return (
         
         <div className="p-2 py-1"> </div>
         {getButtonName(index) !== "" &&
-         owners[tokenId-1] === (connectedAccount) &&
+         (owners[tokenId-1] === signer ||
+          getApproved === signer) &&
         (
         <div className="flex items-center justify-center"> 
         <button 
@@ -439,10 +444,10 @@ return (
           <span className="p-2 text-md font-bold"> 3rd parties:</span>
         </div>
         
-        {owners[tokenId-1] === connectedAccount &&
+        {owners[tokenId-1] === signer &&
         (        
         <button 
-          disabled={toggleBreedingLoading}
+          disabled={toggleBreedingLoading || peeps[index].breedCount > 2}
           className={`btn ${peeps[index].breedingAllowed ? "btn-success" : "btn-warning"} btn-sm mx-2 min-w-[8rem]`}
           onClick={async () => await changeBreedingAllowance()}
         >
@@ -453,15 +458,15 @@ return (
         )}
         {!toggleBreedingLoading && (
           <>
-            {peeps[index].breedingAllowed ? "Allowed" : "Not allowed"}
+            {peeps[index].breedingAllowed && peeps[index].breedCount < 3 ? "Allowed" : "Not allowed"}
           </>
         )}          
         </button> )}
 
-        {owners[tokenId-1] !== connectedAccount &&
+        {owners[tokenId-1] !== signer &&
         ( 
         <span className="p-2 mx-1"> 
-          {peeps[index].breedingAllowed ? <span className="text-sm font-bold px-6 py-1.5 rounded-[1rem] bg-teal-300 shadow-md">ALLOWED</span> : <span className="text-sm font-bold px-6 py-1.5 rounded-[1rem] bg-yellow-400 shadow-md">NOT ALLOWED</span>}
+          {peeps[index].breedingAllowed && peeps[index].breedCount < 3 ? <span className="text-sm font-bold px-6 py-1.5 rounded-[1rem] bg-teal-300 shadow-md">ALLOWED</span> : <span className="text-sm font-bold px-6 py-1.5 rounded-[1rem] bg-yellow-400 shadow-md">NOT ALLOWED</span>}
         </span>
         )}
 
@@ -479,7 +484,7 @@ return (
         <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 w-50 h-50 gap-1">
           <li>
             <button 
-              disabled={owners[tokenId-1] !== connectedAccount && 
+              disabled={owners[tokenId-1] !== signer && 
                 !isApprovedForAll}
               className="btn btn-success btn-md shadow-md" 
               onClick={() => openModalERC721(0)}
@@ -490,8 +495,8 @@ return (
 
           <li>
             <button 
-              disabled={owners[tokenId-1] !== connectedAccount &&
-                getApproved !== connectedAccount && 
+              disabled={owners[tokenId-1] !== signer &&
+                getApproved !== signer && 
                 !isApprovedForAll}
               className="btn btn-success btn-md shadow-md" 
               onClick={() => openModalERC721(1)}
@@ -502,8 +507,8 @@ return (
 
           <li>
             <button 
-              disabled={owners[tokenId-1] !== connectedAccount &&
-                getApproved !== connectedAccount && 
+              disabled={owners[tokenId-1] !== signer &&
+                getApproved !== signer && 
                 !isApprovedForAll}
               className="btn btn-success btn-md shadow-md" 
               onClick={() => openModalERC721(2)}
@@ -525,7 +530,7 @@ return (
       className="flex flex-col absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-green-300 shadow-md rounded-3xl px-6 lg:px-8 py-6 lg:py-10 gap-4"
     >
       <span className="font-bold text-lg">
-        Change name of {peeps[tokenId-1]?.peepName}
+        Change name of {allPeeps[tokenId-1]?.peepName}
       </span>
       <InputBase placeholder="New name" value={newName} onChange={setNewName}/>
       <button 
@@ -555,7 +560,7 @@ return (
       className="flex flex-col absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-green-300 shadow-md rounded-3xl px-6 lg:px-8 py-6 lg:py-10 gap-4"
     >
       <span className="font-bold text-lg">
-        Breed {peeps[tokenId-1]?.peepName} for {ethers.utils.formatEther(breedingFee || 0)} MATIC with
+        Breed {allPeeps[tokenId-1]?.peepName} for {ethers.utils.formatEther(breedingFee || 0)} MATIC with
       </span>
       <InputBase placeholder="Id" value={partnerTokenId} 
       onChange={value => {
@@ -634,7 +639,7 @@ return (
     >      
       <div className="flex flex-row">
         <span className="font-bold text-lg">
-          Approve {peeps[tokenId-1]?.peepName} to
+          Approve {allPeeps[tokenId-1]?.peepName} to
         </span>
       </div>
       <InputBase placeholder="Address" value={addressTo} 
@@ -672,7 +677,7 @@ return (
     >      
       <div className="flex flex-row">
         <span className="font-bold text-lg">
-          Transfer {peeps[tokenId-1]?.peepName} to
+          Transfer {allPeeps[tokenId-1]?.peepName} to
         </span>
       </div>
       <InputBase placeholder="Address" value={addressTo} 
@@ -711,7 +716,7 @@ return (
     >      
       <div className="flex flex-row">
         <span className="font-bold text-lg">
-          Transfer {peeps[tokenId-1]?.peepName} from
+          Transfer {allPeeps[tokenId-1]?.peepName} from
         </span>
       </div>
       <InputBase placeholder="Address" value={addressFrom} 

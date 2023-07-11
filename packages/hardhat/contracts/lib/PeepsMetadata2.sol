@@ -183,7 +183,7 @@ contract PeepsMetadata2 {
     svg = string(abi.encodePacked(svg,
       '<text x="125" y="160" class="trait">',
       'Name: </text><text x="185" y="160" class="value">',
-      peep.peepName,
+      getFittingName(peep.peepName),
       '</text>'
     ));
 
@@ -372,6 +372,21 @@ contract PeepsMetadata2 {
     addrStr = string(abi.encodePacked(addrStr,
       string(s)
     ));   
+  }
+
+  function getFittingName(string calldata x) internal pure returns (string memory) {
+    bytes memory y = bytes(x);
+    if (y.length < 12) return x;
+
+    bytes memory s;
+    for (uint256 i; i < 11;) {
+      s = abi.encodePacked(s, bytes1(y[i]));
+      unchecked {++i;}
+    }
+
+    return string(abi.encodePacked(string(s),
+      '...'
+    ));
   }
 
   function char(bytes1 b) internal pure returns (bytes1 c) {

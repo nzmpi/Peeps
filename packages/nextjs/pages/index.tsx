@@ -1,25 +1,31 @@
 import type { NextPage } from "next";
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 import React,{ useState, useEffect } from "react";
 import { WalletIcon } from "@heroicons/react/24/outline";
 import { MetaHeader } from "~~/components/MetaHeader";
 import { 
   useScaffoldContractRead,
   useDeployedContractInfo,
-  useScaffoldContractWrite
+  useScaffoldContractWrite,
+  useScaffoldEventSubscriber
 } from "~~/hooks/scaffold-eth";
-import { useAccount } from 'wagmi';
+import { useAccount, Chain, useNetwork, useSwitchNetwork } from 'wagmi';
 import { PeepsCards } from "~~/components/assets/PeepsCards";
 import { Spinner } from "~~/components/Spinner";
+import { toast } from "react-hot-toast";
+import * as chains from "wagmi/chains";
 
 const Home: NextPage = () => {
   const [isOnlyYoursActive, setIsOnlyYoursActive] = useState(false);
+  const [sortingValue, setSortingValue] = useState("All");
   const [ownedTokenIds, setOwnedTokenIds] = useState<any[]>();
   const [peepsOwned, setPeepsOwned] = useState<any[]>();
   const [ownedtokenURIs, setOwnedtokenURIs] = useState<any[]>();
 
-  const {address: connectedAccount} = useAccount();
+  const {address: signer} = useAccount();
   const { isLoading: isLoadingPeepsContract } = useDeployedContractInfo("Peeps");
+  const { chain } = useNetwork();
+  const { chains: switchChains, switchNetwork } = useSwitchNetwork();
 
   const { data: mintingFee } = useScaffoldContractRead({
     contractName: "Peeps",
@@ -49,7 +55,7 @@ const Home: NextPage = () => {
   const { data: funds } = useScaffoldContractRead({
     contractName: "Peeps",
     functionName: "funds",
-    args: [connectedAccount],
+    args: [signer],
   });
 
   const { writeAsync: mint, isLoading: mintLoading } = useScaffoldContractWrite({
@@ -116,6 +122,18 @@ const Home: NextPage = () => {
     return formattedTime;
   };
 
+  const getShortAddress = (addressLong: string) : string => {
+    let addressShort = "";
+    for (let i = 0; i < 6; i++) {
+      addressShort += addressLong[i];
+    }
+    addressShort += "...";
+    for (let i = 38; i < 42; i++) {
+      addressShort += addressLong[i];
+    }
+    return addressShort;
+  }
+
   const toggleRadio = () => {
     setIsOnlyYoursActive(!isOnlyYoursActive);
   };
@@ -125,17 +143,248 @@ const Home: NextPage = () => {
     let tokenIdsTemp = [];
     let peepsTemp = [];
     let tokenURIsTemp = [];
-    for (let i=0; i < owners?.length; i++) {
-      if (owners[i] === connectedAccount) {
-        peepsTemp.push(peeps[i]);
-        tokenURIsTemp.push(tokenURIs[i]);
-        tokenIdsTemp.push(i+1);
+    const timeNow = Date.now()/1000;
+    if (isOnlyYoursActive) {
+      for (let i=0; i < owners?.length; i++) {
+        if (owners[i] === signer) {
+          if (sortingValue === "All") {          
+            peepsTemp.push(peeps[i]);
+            tokenURIsTemp.push(tokenURIs[i]);
+            tokenIdsTemp.push(i+1);
+          } else if (
+            sortingValue === "Breadable" && 
+            peeps[i].kidTime < timeNow && 
+            peeps[i].adultTime > timeNow &&
+            peeps[i].breedCount < 3) {
+              peepsTemp.push(peeps[i]);
+              tokenURIsTemp.push(tokenURIs[i]);
+              tokenIdsTemp.push(i+1);
+          } else if (
+            sortingValue === "Kids" && 
+            peeps[i].kidTime > timeNow) {
+              peepsTemp.push(peeps[i]);
+              tokenURIsTemp.push(tokenURIs[i]);
+              tokenIdsTemp.push(i+1);
+          } else if (
+            sortingValue === "Adults" && 
+            peeps[i].kidTime < timeNow && 
+            peeps[i].adultTime > timeNow) {
+              peepsTemp.push(peeps[i]);
+              tokenURIsTemp.push(tokenURIs[i]);
+              tokenIdsTemp.push(i+1);
+          } else if (
+            sortingValue === "Old" && 
+            peeps[i].adultTime < timeNow && 
+            peeps[i].oldTime > timeNow) {
+              peepsTemp.push(peeps[i]);
+              tokenURIsTemp.push(tokenURIs[i]);
+              tokenIdsTemp.push(i+1);
+          } else if (
+            sortingValue === "Buried" && 
+            peeps[i].isBuried) {
+              peepsTemp.push(peeps[i]);
+              tokenURIsTemp.push(tokenURIs[i]);
+              tokenIdsTemp.push(i+1);
+          }else if (
+            sortingValue === "Dead" && 
+            peeps[i].oldTime < timeNow) {
+              peepsTemp.push(peeps[i]);
+              tokenURIsTemp.push(tokenURIs[i]);
+              tokenIdsTemp.push(i+1);
+          }
+        }
+      }
+    } else {
+      for (let i=0; i < owners?.length; i++) {
+        if (
+          sortingValue === "Breadable" && 
+          peeps[i].kidTime < timeNow && 
+          peeps[i].adultTime > timeNow &&
+          (peeps[i].breedingAllowed || 
+          owners[i] === signer) && 
+          peeps[i].breedCount < 3) {
+            peepsTemp.push(peeps[i]);
+            tokenURIsTemp.push(tokenURIs[i]);
+            tokenIdsTemp.push(i+1);
+        } else if (
+          sortingValue === "Kids" && 
+          peeps[i].kidTime > timeNow) {
+            peepsTemp.push(peeps[i]);
+            tokenURIsTemp.push(tokenURIs[i]);
+            tokenIdsTemp.push(i+1);
+        } else if (
+          sortingValue === "Adults" && 
+          peeps[i].kidTime < timeNow && 
+          peeps[i].adultTime > timeNow) {
+            peepsTemp.push(peeps[i]);
+            tokenURIsTemp.push(tokenURIs[i]);
+            tokenIdsTemp.push(i+1);
+        } else if (
+          sortingValue === "Old" && 
+          peeps[i].adultTime < timeNow && 
+          peeps[i].oldTime > timeNow) {
+            peepsTemp.push(peeps[i]);
+            tokenURIsTemp.push(tokenURIs[i]);
+            tokenIdsTemp.push(i+1);
+        } else if (
+          sortingValue === "Buried" && 
+          peeps[i].isBuried) {
+            peepsTemp.push(peeps[i]);
+            tokenURIsTemp.push(tokenURIs[i]);
+            tokenIdsTemp.push(i+1);
+        } else if (
+          sortingValue === "Dead" && 
+          peeps[i].oldTime < timeNow) {
+            peepsTemp.push(peeps[i]);
+            tokenURIsTemp.push(tokenURIs[i]);
+            tokenIdsTemp.push(i+1);
+        }
       }
     }
     setPeepsOwned(peepsTemp);
     setOwnedtokenURIs(tokenURIsTemp);
     setOwnedTokenIds(tokenIdsTemp);
-  }, [isLoadingPeepsContract, peeps, connectedAccount, isOnlyYoursActive, tokenURIs]);
+  }, [isLoadingPeepsContract, peeps, signer, isOnlyYoursActive, tokenURIs, sortingValue]);
+
+  useScaffoldEventSubscriber({
+    contractName: "Peeps",
+    eventName: "Mint",
+    listener: (minter, tokenId) => {
+      if (minter === signer) {
+        toast("Peep #" + tokenId.toString() + " is here!", 
+        {
+          className: "w-[250px] h-[80px] bg-success rounded-3xl shadow-xl border-green-400 border-2 px-7 py-5",
+          icon: "🚀",
+          position: "bottom-right",
+          style: {
+            padding: "20px",
+            background: '#7dfa9f',
+          }
+        })
+      }
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "Peeps",
+    eventName: "NameChanged",
+    listener: (sender, tokenId, name) => {
+      if (sender === signer) {
+        toast(
+          "Peep #" + tokenId.toString() + 
+          "'s name is now " + name + "!",
+        {
+          className: "w-[300px] h-[80px] bg-success rounded-3xl shadow-xl border-green-400 border-2 px-7 py-5",
+          icon: "👶",
+          position: "bottom-right",
+          style: {
+            padding: "20px",
+            background: '#7dfa9f',
+          }
+        })
+      }
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "Peeps",
+    eventName: "Breed",
+    listener: (sender, tokenId1, tokenId2, kidId) => {
+      if (sender === signer) {
+        toast(
+          peeps?.[tokenId1.toNumber()-1].peepName +
+          " and " + peeps?.[tokenId2.toNumber()-1].peepName + 
+          " made Peep #" + kidId.toString() + "!", 
+        {
+          className: "w-[300px] h-[80px] bg-success rounded-3xl shadow-xl border-green-400 border-2 px-7 py-5",
+          icon: "💕",
+          position: "bottom-right",
+          style: {
+            padding: "20px",
+            background: '#7dfa9f',
+          }
+        })
+      }
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "Peeps",
+    eventName: "GiftHat",
+    listener: (sender, giverId, receiverId) => {
+      if (sender === signer || 
+        owners?.[giverId.toNumber()-1] === signer || 
+        owners?.[receiverId.toNumber()-1] === signer
+      ) {
+        toast(
+          peeps?.[giverId.toNumber()-1].peepName +
+          " gifted a hat to " + peeps?.[receiverId.toNumber()-1].peepName + "!", 
+        {
+          className: "w-[300px] h-[80px] bg-success rounded-3xl shadow-xl border-green-400 border-2 px-7 py-5",
+          icon: "🎩",
+          position: "bottom-right",
+          style: {
+            padding: "20px",
+            background: '#7dfa9f',
+          }
+        })
+      }
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "Peeps",
+    eventName: "Buried",
+    listener: (sender, tokenId) => {
+      if (sender === signer) {
+        toast(
+          "You buried " + peeps?.[tokenId.toNumber()-1].peepName, 
+        {
+          className: "w-[300px] h-[80px] bg-success rounded-3xl shadow-xl border-green-400 border-2 px-7 py-5",
+          icon: "🪦",
+          position: "bottom-right",
+          style: {
+            padding: "20px",
+            background: '#7dfa9f',
+          }
+        })
+        return;
+      }
+      if (owners?.[tokenId.toNumber()-1] === signer) {
+        toast(
+          getShortAddress(sender) + " buried " + peeps?.[tokenId.toNumber()-1].peepName, 
+        {
+          className: "w-[330px] h-[80px] bg-success rounded-3xl shadow-xl border-green-400 border-2 px-7 py-5",
+          icon: "🪦",
+          position: "bottom-right",
+          style: {
+            padding: "20px",
+            background: '#7dfa9f',
+          }
+        })
+      }
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "Peeps",
+    eventName: "FundsWithdrawn",
+    listener: (sender, amount) => {
+      if (sender === signer) {
+        toast(
+          "You withdrew" + ethers.utils.formatEther(amount) + " MATIC!", 
+        {
+          className: "w-[300px] h-[80px] bg-success rounded-3xl shadow-xl border-green-400 border-2 px-7 py-5",
+          icon: "🤑",
+          position: "bottom-right",
+          style: {
+            padding: "20px",
+            background: '#7dfa9f',
+          }
+        })
+      }
+    },
+  });
 
   return (
     <>
@@ -182,7 +431,7 @@ const Home: NextPage = () => {
           <input
             type="radio" 
             name="AllOrYours" 
-            className="radio flex border-2 border-base-300" 
+            className="radio flex border-2 border-green-500" 
             value="All" 
             checked={!isOnlyYoursActive}
             onChange={toggleRadio}
@@ -191,23 +440,111 @@ const Home: NextPage = () => {
           <input 
             type="radio" 
             name="AllOrYours" 
-            className="radio flex border-2 border-base-300" 
+            className="radio flex border-2 border-green-500" 
             value="Yours" 
             checked={isOnlyYoursActive}
             onChange={toggleRadio}
           />
           <label>Yours</label>
-        </div>
 
+          <select
+            value={sortingValue}
+            onChange={e => setSortingValue(e.target.value)}
+            className="select select-bordered bg-primary-500 input-sm w-[120px] flex border-2 border-green-500 focus:outline-none shadow"
+          >
+          <option value="All">All</option>
+          <option value="Breadable">Breadable</option>
+          <option value="Kids">Kids</option>
+          <option value="Adults">Adults</option>
+          <option value="Old">Old</option>
+          <option value="Dead">Dead</option>
+          <option value="Buried">Buried</option>
+          </select>
+        </div>        
+        
         {!isOnlyYoursActive &&
+         sortingValue === "All" &&
         (
         <PeepsCards tokenIds={tokenIds} peepsOwned={peeps} allPeeps={peeps} owners={owners} tokenURIs={tokenURIs} whose="All"/>
         )}
 
+        {!isOnlyYoursActive &&
+         sortingValue === "Breadable" &&
+        (
+        <PeepsCards tokenIds={ownedTokenIds} peepsOwned={peepsOwned} allPeeps={peeps} owners={owners} tokenURIs={ownedtokenURIs} whose="All breadable"/>
+        )}
+
+        {!isOnlyYoursActive &&
+         sortingValue === "Kids" &&
+        (
+        <PeepsCards tokenIds={ownedTokenIds} peepsOwned={peepsOwned} allPeeps={peeps} owners={owners} tokenURIs={ownedtokenURIs} whose="All kid"/>
+        )}
+
+        {!isOnlyYoursActive &&
+         sortingValue === "Adults" &&
+        (
+        <PeepsCards tokenIds={ownedTokenIds} peepsOwned={peepsOwned} allPeeps={peeps} owners={owners} tokenURIs={ownedtokenURIs} whose="All adult"/>
+        )}
+
+        {!isOnlyYoursActive &&
+         sortingValue === "Old" &&
+        (
+        <PeepsCards tokenIds={ownedTokenIds} peepsOwned={peepsOwned} allPeeps={peeps} owners={owners} tokenURIs={ownedtokenURIs} whose="All old"/>
+        )}
+
+        {!isOnlyYoursActive &&
+         sortingValue === "Dead" &&
+        (
+        <PeepsCards tokenIds={ownedTokenIds} peepsOwned={peepsOwned} allPeeps={peeps} owners={owners} tokenURIs={ownedtokenURIs} whose="All dead"/>
+        )}
+
+        {!isOnlyYoursActive &&
+         sortingValue === "Buried" &&
+        (
+        <PeepsCards tokenIds={ownedTokenIds} peepsOwned={peepsOwned} allPeeps={peeps} owners={owners} tokenURIs={ownedtokenURIs} whose="All buried"/>
+        )}
+
         {isOnlyYoursActive &&
+         sortingValue === "All" &&
         (
         <PeepsCards tokenIds={ownedTokenIds} peepsOwned={peepsOwned} allPeeps={peeps} owners={owners} tokenURIs={ownedtokenURIs} whose="Your"/>
         )}
+
+        {isOnlyYoursActive &&
+         sortingValue === "Breadable" &&
+        (
+        <PeepsCards tokenIds={ownedTokenIds} peepsOwned={peepsOwned} allPeeps={peeps} owners={owners} tokenURIs={ownedtokenURIs} whose="Your breadable"/>
+        )}
+
+        {isOnlyYoursActive &&
+         sortingValue === "Kids" &&
+        (
+        <PeepsCards tokenIds={ownedTokenIds} peepsOwned={peepsOwned} allPeeps={peeps} owners={owners} tokenURIs={ownedtokenURIs} whose="Your kid"/>
+        )}
+
+        {isOnlyYoursActive &&
+         sortingValue === "Adults" &&
+        (
+        <PeepsCards tokenIds={ownedTokenIds} peepsOwned={peepsOwned} allPeeps={peeps} owners={owners} tokenURIs={ownedtokenURIs} whose="Your adult"/>
+        )}
+
+        {isOnlyYoursActive &&
+         sortingValue === "Old" &&
+        (
+        <PeepsCards tokenIds={ownedTokenIds} peepsOwned={peepsOwned} allPeeps={peeps} owners={owners} tokenURIs={ownedtokenURIs} whose="Your old"/>
+        )}
+
+        {isOnlyYoursActive &&
+         sortingValue === "Dead" &&
+        (
+        <PeepsCards tokenIds={ownedTokenIds} peepsOwned={peepsOwned} allPeeps={peeps} owners={owners} tokenURIs={ownedtokenURIs} whose="Your dead"/>
+        )}
+
+        {isOnlyYoursActive &&
+         sortingValue === "Buried" &&
+        (
+        <PeepsCards tokenIds={ownedTokenIds} peepsOwned={peepsOwned} allPeeps={peeps} owners={owners} tokenURIs={ownedtokenURIs} whose="Your buried"/>
+        )}   
 
         {funds &&
         funds.gt(0) &&
@@ -241,7 +578,9 @@ const Home: NextPage = () => {
           </div> 
         </form>
         </div>
-        )}   
+        )} 
+
+
         
       </div>
     </>

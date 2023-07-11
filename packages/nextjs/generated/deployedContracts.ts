@@ -5,7 +5,7 @@ const contracts = {
       name: "localhost",
       contracts: {
         Peeps: {
-          address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+          address: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
           abi: [
             {
               inputs: [
@@ -92,6 +92,12 @@ const contracts = {
               anonymous: false,
               inputs: [
                 {
+                  indexed: false,
+                  internalType: "address",
+                  name: "sender",
+                  type: "address",
+                },
+                {
                   indexed: true,
                   internalType: "uint256",
                   name: "peep1",
@@ -118,6 +124,12 @@ const contracts = {
               inputs: [
                 {
                   indexed: true,
+                  internalType: "address",
+                  name: "sender",
+                  type: "address",
+                },
+                {
+                  indexed: true,
                   internalType: "uint256",
                   name: "tokenId",
                   type: "uint256",
@@ -129,6 +141,12 @@ const contracts = {
             {
               anonymous: false,
               inputs: [
+                {
+                  indexed: true,
+                  internalType: "address",
+                  name: "sender",
+                  type: "address",
+                },
                 {
                   indexed: false,
                   internalType: "uint256",
@@ -144,14 +162,58 @@ const contracts = {
               inputs: [
                 {
                   indexed: true,
+                  internalType: "address",
+                  name: "sender",
+                  type: "address",
+                },
+                {
+                  indexed: true,
                   internalType: "uint256",
-                  name: "giver",
+                  name: "tokenId",
+                  type: "uint256",
+                },
+              ],
+              name: "Buried",
+              type: "event",
+            },
+            {
+              anonymous: false,
+              inputs: [
+                {
+                  indexed: true,
+                  internalType: "address",
+                  name: "sender",
+                  type: "address",
+                },
+                {
+                  indexed: false,
+                  internalType: "uint256",
+                  name: "amount",
+                  type: "uint256",
+                },
+              ],
+              name: "FundsWithdrawn",
+              type: "event",
+            },
+            {
+              anonymous: false,
+              inputs: [
+                {
+                  indexed: true,
+                  internalType: "address",
+                  name: "sender",
+                  type: "address",
+                },
+                {
+                  indexed: true,
+                  internalType: "uint256",
+                  name: "giverId",
                   type: "uint256",
                 },
                 {
                   indexed: true,
                   internalType: "uint256",
-                  name: "receiver",
+                  name: "receiverId",
                   type: "uint256",
                 },
               ],
@@ -181,6 +243,12 @@ const contracts = {
               anonymous: false,
               inputs: [
                 {
+                  indexed: true,
+                  internalType: "address",
+                  name: "sender",
+                  type: "address",
+                },
+                {
                   indexed: false,
                   internalType: "uint256",
                   name: "newFee",
@@ -193,6 +261,12 @@ const contracts = {
             {
               anonymous: false,
               inputs: [
+                {
+                  indexed: true,
+                  internalType: "address",
+                  name: "sender",
+                  type: "address",
+                },
                 {
                   indexed: true,
                   internalType: "uint256",
@@ -212,6 +286,12 @@ const contracts = {
             {
               anonymous: false,
               inputs: [
+                {
+                  indexed: true,
+                  internalType: "address",
+                  name: "sender",
+                  type: "address",
+                },
                 {
                   indexed: true,
                   internalType: "address",
@@ -238,6 +318,12 @@ const contracts = {
             {
               anonymous: false,
               inputs: [
+                {
+                  indexed: true,
+                  internalType: "address",
+                  name: "sender",
+                  type: "address",
+                },
                 {
                   indexed: false,
                   internalType: "address",
@@ -782,34 +868,6 @@ const contracts = {
               inputs: [
                 {
                   internalType: "address",
-                  name: "from",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "to",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256",
-                  name: "tokenId",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bytes",
-                  name: "data",
-                  type: "bytes",
-                },
-              ],
-              name: "safeTransferFrom",
-              outputs: [],
-              stateMutability: "nonpayable",
-              type: "function",
-            },
-            {
-              inputs: [
-                {
-                  internalType: "address",
                   name: "operator",
                   type: "address",
                 },
@@ -941,7 +999,7 @@ const contracts = {
           ],
         },
         PeepsMetadata: {
-          address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+          address: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
           abi: [
             {
               inputs: [],

@@ -47,6 +47,7 @@
     "react-inlinesvg": "^3.0.2",
     "react-modal": "^3.16.1",
     "react-paginate": "^8.2.0",
+    "react-select": "^5.7.3",
     "react-use": "^17.4.0",
     "vercel": "latest"
   }

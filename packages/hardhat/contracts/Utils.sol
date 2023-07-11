@@ -9,15 +9,15 @@ contract Utils {
     address public owner;
     address public pendingOwner;
     IPeepsMetadata PM;
-    uint256 public mintingFee = 0.01 ether;
-    uint256 public breedingFee = 0.01 ether;
+    uint256 public mintingFee = 0.001 ether;
+    uint256 public breedingFee = 0.001 ether;
 
     uint256 lockedFunds;
     mapping(address => uint256) public funds;
 
     function proposeOwner(address newOwner) external payable onlyOwner {
         pendingOwner = newOwner;
-        emit Events.OwnerProposed(newOwner);
+        emit Events.OwnerProposed(msg.sender, newOwner);
     }
 
     function acceptOwnership() external payable {
@@ -29,17 +29,17 @@ contract Utils {
 
     function changeMintingFee(uint256 newFee) external payable onlyOwner {
         mintingFee = newFee;
-        emit Events.MintingFeeChanged(newFee);
+        emit Events.MintingFeeChanged(msg.sender, newFee);
     }
 
     function changePeepsMetadata(address newPM) external payable onlyOwner {
         PM = IPeepsMetadata(newPM);
-        emit Events.PeepsMetadataChanged(newPM);
+        emit Events.PeepsMetadataChanged(msg.sender, newPM);
     }
 
     function changeBreedingFee(uint256 newFee) external payable onlyOwner {
         breedingFee = newFee;
-        emit Events.BreedingFeeChanged(newFee);
+        emit Events.BreedingFeeChanged(msg.sender, newFee);
     }
 
     function withdraw() external payable onlyOwner {
@@ -54,6 +54,7 @@ contract Utils {
       lockedFunds -= funds_;
       (bool s,) = msg.sender.call{value: funds_}("");
       if (!s) revert();
+      emit Events.FundsWithdrawn(msg.sender, funds_);
     }
 
     modifier onlyOwner() {
