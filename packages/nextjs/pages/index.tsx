@@ -185,8 +185,9 @@ const Home: NextPage = () => {
               peepsTemp.push(peeps[i]);
               tokenURIsTemp.push(tokenURIs[i]);
               tokenIdsTemp.push(i+1);
-          }else if (
+          } else if (
             sortingValue === "Dead" && 
+            !peeps[i].isBuried && 
             peeps[i].oldTime < timeNow) {
               peepsTemp.push(peeps[i]);
               tokenURIsTemp.push(tokenURIs[i]);
@@ -234,6 +235,7 @@ const Home: NextPage = () => {
             tokenIdsTemp.push(i+1);
         } else if (
           sortingValue === "Dead" && 
+          !peeps[i].isBuried && 
           peeps[i].oldTime < timeNow) {
             peepsTemp.push(peeps[i]);
             tokenURIsTemp.push(tokenURIs[i]);
