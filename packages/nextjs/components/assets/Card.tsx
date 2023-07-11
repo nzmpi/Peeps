@@ -14,6 +14,7 @@ import {
   EllipsisHorizontalIcon
 } from "@heroicons/react/24/outline";
 import Modal from 'react-modal';
+import { AddressInput } from "../scaffold-eth";
 
 export enum Status {
   KID = "Kid",
@@ -642,13 +643,16 @@ return (
           Approve {allPeeps[tokenId-1]?.peepName} to
         </span>
       </div>
-      <InputBase placeholder="Address" value={addressTo} 
+      <AddressInput placeholder="Address" value={addressTo} 
       onChange={value => {
         if (value === "") {
           setAddressTo("");
         } else   
           setAddressTo(value);
       }}/>
+      {!ethers.utils.isAddress(addressTo) && addressTo !== "" && (
+        <span className="ml-2 text-[0.95rem] text-red-500">Not an address!</span>
+      )}
       <button 
         disabled={approveLoading || 
           !ethers.utils.isAddress(addressTo)}
@@ -680,13 +684,16 @@ return (
           Transfer {allPeeps[tokenId-1]?.peepName} to
         </span>
       </div>
-      <InputBase placeholder="Address" value={addressTo} 
+      <AddressInput placeholder="Address" value={addressTo} 
       onChange={value => {
         if (value === "") {
           setAddressTo("");
         } else   
           setAddressTo(value);
       }}/>
+      {!ethers.utils.isAddress(addressTo) && addressTo !== "" && (
+        <span className="ml-2 text-[0.95rem] text-red-500">Not an address!</span>
+      )}
       <button 
         disabled={safeTransferFromLoading || 
           !ethers.utils.isAddress(addressTo) ||
@@ -719,25 +726,31 @@ return (
           Transfer {allPeeps[tokenId-1]?.peepName} from
         </span>
       </div>
-      <InputBase placeholder="Address" value={addressFrom} 
+      <AddressInput placeholder="Address" value={addressFrom} 
       onChange={value => {
         if (value === "") {
           setAddressFrom("");
         } else   
           setAddressFrom(value);
       }}/>
+      {!ethers.utils.isAddress(addressFrom) && addressFrom !== "" && (
+        <span className="ml-2 text-[0.95rem] text-red-500">Not an address!</span>
+      )}
       <div className="flex flex-row">
         <span className="font-bold text-lg">
           to
         </span>
       </div>
-      <InputBase placeholder="Address" value={addressTo} 
+      <AddressInput placeholder="Address" value={addressTo} 
       onChange={value => {
         if (value === "") {
           setAddressTo("");
         } else   
           setAddressTo(value);
       }}/>
+      {!ethers.utils.isAddress(addressTo) && addressTo !== "" && (
+        <span className="ml-2 text-[0.95rem] text-red-500">Not an address!</span>
+      )}
       <button 
         disabled={safeTransferFromLoading || 
           !ethers.utils.isAddress(addressTo) ||
