@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-library Events {
+contract Events {
   event OwnerProposed(address indexed sender, address indexed newOwner);
   event OwnershipAccepted(address indexed newOwner);
   event MintingFeeChanged(address indexed sender, uint256 newFee);

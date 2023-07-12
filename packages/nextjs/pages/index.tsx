@@ -385,6 +385,78 @@ const Home: NextPage = () => {
     },
   });
 
+  useScaffoldEventSubscriber({
+    contractName: "Peeps",
+    eventName: "Transfer",
+    listener: (from, to, tokenId) => {
+      if (from === signer) {
+        toast(
+          "You sent " + peeps?.[tokenId.toNumber()-1].peepName + " to " + 
+          getShortAddress(to), 
+        {
+          className: "w-[300px] h-[80px] bg-success rounded-3xl shadow-xl border-green-400 border-2 px-7 py-5",
+          icon: "🎉",
+          position: "bottom-right",
+          style: {
+            padding: "20px",
+            background: '#7dfa9f',
+          }
+        })
+        return;
+      }
+
+      if (to === signer) {
+        toast(
+          getShortAddress(from) + " sent you " + peeps?.[tokenId.toNumber()-1].peepName, 
+        {
+          className: "w-[300px] h-[80px] bg-success rounded-3xl shadow-xl border-green-400 border-2 px-7 py-5",
+          icon: "🎉",
+          position: "bottom-right",
+          style: {
+            padding: "20px",
+            background: '#7dfa9f',
+          }
+        })
+      }
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "Peeps",
+    eventName: "Approval",
+    listener: (from, to, tokenId) => {
+      if (from === signer) {
+        toast(
+          "You approved " + peeps?.[tokenId.toNumber()-1].peepName + " to " + 
+          getShortAddress(to), 
+        {
+          className: "w-[300px] h-[80px] bg-success rounded-3xl shadow-xl border-green-400 border-2 px-7 py-5",
+          icon: "✅",
+          position: "bottom-right",
+          style: {
+            padding: "20px",
+            background: '#7dfa9f',
+          }
+        })
+        return;
+      }
+
+      if (to === signer) {
+        toast(
+          getShortAddress(from) + " approved you " + peeps?.[tokenId.toNumber()-1].peepName, 
+        {
+          className: "w-[300px] h-[80px] bg-success rounded-3xl shadow-xl border-green-400 border-2 px-7 py-5",
+          icon: "✅",
+          position: "bottom-right",
+          style: {
+            padding: "20px",
+            background: '#7dfa9f',
+          }
+        })
+      }
+    },
+  });
+
   return (
     <>
       <MetaHeader/>

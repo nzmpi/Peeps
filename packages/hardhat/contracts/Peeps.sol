@@ -13,7 +13,9 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
     uint64 totalPeeps = 1;
     uint64[MAX_MINT] mintedPeeps;
     Peep[] peeps;
-
+    
+    event Minted(uint64 id);
+    
     mapping(address => uint64[]) ownedPeeps;
 
     constructor(address _PM) payable { 
@@ -60,7 +62,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       }));
 
       _safeMint(msg.sender, id);
-      emit Events.Mint(msg.sender, id);
+      emit Mint(msg.sender, id);
     }
 
     function checkMint() internal view returns (uint256) {
@@ -110,7 +112,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       Peep storage peep = peeps[tokenId-1];
       if (peep.kidTime < block.timestamp) revert Errors.NotAllowed();
       peep.peepName = newName;
-      emit Events.NameChanged(msg.sender, tokenId, newName);
+      emit NameChanged(msg.sender, tokenId, newName);
     }
 
     function breed(uint256 tokenId1, uint256 tokenId2) external payable {
@@ -146,10 +148,10 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       }
 
       if (areTwins) {
-        emit Events.Breed(msg.sender, tokenId1, tokenId2, kid1);
-        emit Events.Breed(msg.sender, tokenId1, tokenId2, kid2);
+        emit Breed(msg.sender, tokenId1, tokenId2, kid1);
+        emit Breed(msg.sender, tokenId1, tokenId2, kid2);
       } else 
-        emit Events.Breed(msg.sender, tokenId1, tokenId2, kid1);      
+        emit Breed(msg.sender, tokenId1, tokenId2, kid1);      
     }
 
     function createKid(uint256 tokenId1, Peep storage peep1, uint256 tokenId2, Peep storage peep2) internal returns (uint256 id) {
@@ -229,7 +231,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       } else if (breedCount == 3) revert Errors.NotAllowed();
       else
         peeps[tokenId-1].breedingAllowed = !peeps[tokenId-1].breedingAllowed;
-      emit Events.BreedingChanged(msg.sender, tokenId);
+      emit BreedingChanged(msg.sender, tokenId);
     }
 
     function isBreedable(uint256 tokenId) internal view returns (bool) {
@@ -255,7 +257,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       if (!isGrandKid(giverId, receiverId)) revert Errors.WrongPeep();
       Peep storage grandKid = peeps[receiverId-1];
       grandKid.hasHat = uint24(getRandomNumber(giverId) % MAX_COLOR);
-      emit Events.GiftHat(msg.sender, giverId, receiverId);
+      emit GiftHat(msg.sender, giverId, receiverId);
     }
 
     function buryPeep(uint256 tokenId) external {
@@ -264,7 +266,7 @@ contract Peeps is Utils, ERC721("PEEPS","PPS") {
       if (peep.isBuried) revert Errors.NotAllowed();
       if (peep.oldTime > block.timestamp) revert Errors.NotAllowed();
       peep.isBuried = true;
-      emit Events.Buried(msg.sender, tokenId);
+      emit Buried(msg.sender, tokenId);
     }
 
     function isGrandKid(
