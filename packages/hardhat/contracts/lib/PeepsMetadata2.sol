@@ -5,10 +5,17 @@ import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 import "./Structs.sol";
 import "./Constants.sol";
 
+/**
+ * @title PeepsMetadata (part 2)
+ * @notice all functions are pure 
+ */
 contract PeepsMetadata2 {
   using Strings for uint256;
   bytes16 internal constant ALPHABET = '0123456789abcdef';
 
+  /**
+   * @dev returns the attributes of a peep
+   */
   function getAttributes(Peep calldata peep) external pure returns (string memory attributes) {
     uint256 genes = peep.genes;
     uint256 x1;
@@ -155,6 +162,9 @@ contract PeepsMetadata2 {
     ));
   }
 
+  /**
+   * @dev rreturns the SVG image of a gravestone
+   */
   function getGravestone(Peep calldata peep, address peepOwner) external pure returns (string memory svg) {
     uint256 genes = peep.genes;    
     // avoiding 'Stack too deep' error
@@ -162,12 +172,12 @@ contract PeepsMetadata2 {
     uint256 x2;
     uint256 x3;
 
+    // background
     x1 = genes % Constants.NUMBER_OF_BACKGROUNDS;
     genes /= 10; // changing the number
     x2 = genes % Constants.MAX_COLOR;
     genes /= 10;
     x3 = genes % Constants.MAX_COLOR;
-    // background
     svg = getBackground(x1, uint24(x2), uint24(x3));
 
     // gravestone
@@ -175,7 +185,7 @@ contract PeepsMetadata2 {
       '<rect width="250" height="15" x="80" y="350" fill="grey" stroke="black"/><path d="M80 350, 330 350, 310 340, 100 340 z" fill="grey" stroke="black"/><path d="M110 345, 300 345, 300 120, 270 120, 205 100, 140 120, 110 120 z" fill="grey" stroke="black"/><path d="M140 120 C210 40, 270 120, 270 120" fill="grey" stroke="black"/>'
     ));
     
-    // traits
+    // traits style
     svg = string(abi.encodePacked(svg,
       '<style>.trait { fill: black; font-family: serif; font-size: 16px; }</style><style>.value { fill: black; font-family: serif; font-size: 13px; }</style>'
     ));
@@ -293,7 +303,7 @@ contract PeepsMetadata2 {
   }
 
   function getHatTrait(uint256 hat) internal pure returns (string memory attributes) {
-    if (hat == 0) return 'none';
+    if (hat == 0) return 'None';
     else {
       return string(abi.encodePacked(  
       (hat % Constants.NUMBER_OF_HATS).toString(),
@@ -305,7 +315,7 @@ contract PeepsMetadata2 {
   }
 
   function getLifetime(uint256 birthTime, uint256 deathTime) internal pure returns (uint256) {
-    return (deathTime - birthTime) / 1 minutes;
+    return (deathTime - birthTime) / 1 hours;
   }
 
   function arrayToString(uint64[] memory arr) internal pure returns (string memory str) {
@@ -328,16 +338,17 @@ contract PeepsMetadata2 {
   function toColor(uint24 color) internal pure returns (string memory) {
     bytes3 value = bytes3(color);
     bytes memory buffer = new bytes(6);
-    for (uint256 i = 0; i < 3; i++) {
+    for (uint256 i; i < 3;) {
       buffer[i*2+1] = ALPHABET[uint8(value[i]) & 0xf];
       buffer[i*2] = ALPHABET[uint8(value[i]>>4) & 0xf];
+      unchecked {++i;}
     }    
     return string(buffer);
   }
 
   function boolToString(uint256 _bool) internal pure returns (string memory) {
-    if (_bool == 0) return 'no';
-    else return 'yes';
+    if (_bool == 0) return 'No';
+    else return 'Yes';
   }
 
   function addressToString(address x) internal pure returns (string memory addrStr) {
@@ -374,6 +385,9 @@ contract PeepsMetadata2 {
     ));   
   }
 
+  /**
+   * @dev returns a short name if name.length > 11
+   */
   function getFittingName(string calldata x) internal pure returns (string memory) {
     bytes memory y = bytes(x);
     if (y.length < 12) return x;

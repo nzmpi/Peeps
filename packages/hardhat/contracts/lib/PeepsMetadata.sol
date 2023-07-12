@@ -9,16 +9,38 @@ import "./SVGData.sol";
 import { PeepsMetadata2 } from "./PeepsMetadata2.sol";
 import { IERC721short } from "./Interfaces.sol";
 
+
+/**
+ * @title PeepsMetadata (part 1)
+ * @notice all functions are view 
+ */
 contract PeepsMetadata {
   using Strings for uint256;
   PeepsMetadata2 immutable PM2;
 
+  // avoiding contract size limit
   constructor() payable {
     PM2 = new PeepsMetadata2();
   }
 
+  /**
+   * @dev returns tokenURI with 
+   * a name, discription, attributes and SVG image
+   */
   function tokenURI(Peep calldata peep, uint256 id) external view returns (string memory) {
-    string memory description = "This is a Peep!";
+    string memory description;
+    if (peep.isBuried) {
+      description = "This is a buried Peep!";
+    } else if (block.timestamp < peep.kidTime) {
+      description = "This is a kid Peep!";
+    } else if (block.timestamp < peep.adultTime) {
+      description = "This is an adult Peep!";
+    } else if (block.timestamp < peep.oldTime) {
+      description = "This is an old Peep!";
+    } else {
+      description = "This is a dead Peep!";
+    }
+    
     string memory attributes = PM2.getAttributes(peep);
     string memory image = Base64.encode(bytes(
       generatePeep(peep, id)
@@ -27,27 +49,35 @@ contract PeepsMetadata {
     return generateSVGTokenURI(peep.peepName, description, image, attributes);
   }
 
+  /**
+   * @dev returns the SVG image of a peep
+   */
   function generatePeep(Peep calldata peep, uint256 id) internal view returns (string memory) {
     string memory header = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">';
     string memory footer = '</svg>';
     if (!peep.isBuried) {
       if (block.timestamp < peep.kidTime) {
-        return string(abi.encodePacked(header,getKid(peep),footer));
+        return string(abi.encodePacked(header, getKid(peep), footer));
       } else if (block.timestamp < peep.adultTime) {
-        return string(abi.encodePacked(header,getAdult(peep, id),footer));
+        return string(abi.encodePacked(header, getAdult(peep, id), footer));
       } else if (block.timestamp < peep.oldTime) {
-        return string(abi.encodePacked(header,getOld(peep),footer));
+        return string(abi.encodePacked(header, getOld(peep), footer));
       } else {
-        return string(abi.encodePacked(header,getDead(peep),footer));
+        return string(abi.encodePacked(header, getDead(peep), footer));
       } 
     } else {
-      return string(abi.encodePacked(header,PM2.getGravestone(
-        peep,
-        IERC721short(msg.sender).ownerOf(id)
-      ),footer));
+      return string(abi.encodePacked(header, 
+        PM2.getGravestone(
+          peep,
+          IERC721short(msg.sender).ownerOf(id)
+        ), footer
+      ));
     }
   }
 
+  /**
+   * @dev returns the SVG image of a kid
+   */
   function getKid(Peep calldata peep) internal view returns (string memory svg) {
     uint256 genes = peep.genes;    
     // avoiding 'Stack too deep' error
@@ -56,12 +86,12 @@ contract PeepsMetadata {
     uint256 x3;
     uint256 x4;
 
+    // background
     x1 = genes % Constants.NUMBER_OF_BACKGROUNDS;
     genes /= 10; // changing the number
     x2 = genes % Constants.MAX_COLOR;
     genes /= 10;
     x3 = genes % Constants.MAX_COLOR;
-    // background
     svg = PM2.getBackground(x1, uint24(x2), uint24(x3));
 
     // legs
@@ -80,7 +110,7 @@ contract PeepsMetadata {
     genes /= 10;
     x4 = genes % Constants.NUMBER_OF_ARMS; 
     svg = string(abi.encodePacked(svg,
-      SVGData.getKidArms(x1,x2,x3,x4)
+      SVGData.getKidArms(x1, x2, x3, x4)
     ));
 
     // body
@@ -126,6 +156,9 @@ contract PeepsMetadata {
     ));
   }
 
+  /**
+   * @dev returns the SVG image of an adult
+   */
   function getAdult(Peep calldata peep, uint256 id) internal view returns (string memory svg) {
     uint256 genes = peep.genes;    
     // avoiding 'Stack too deep' error
@@ -211,6 +244,9 @@ contract PeepsMetadata {
     ));
   }
 
+  /**
+   * @dev returns the SVG image of an old
+   */
   function getOld(Peep calldata peep) internal view returns (string memory svg) {
     uint256 genes = peep.genes;    
     // avoiding 'Stack too deep' error
@@ -219,12 +255,12 @@ contract PeepsMetadata {
     uint256 x3;
     uint256 x4;
 
+    // background
     x1 = genes % Constants.NUMBER_OF_BACKGROUNDS;
     genes /= 10; // changing the number
     x2 = genes % Constants.MAX_COLOR;
     genes /= 10;
     x3 = genes % Constants.MAX_COLOR;
-    // background
     svg = PM2.getBackground(x1, uint24(x2), uint24(x3));
 
     // legs
@@ -293,7 +329,10 @@ contract PeepsMetadata {
       SVGData.getAdultHat(peep.hasHat)
     ));
   }
-
+  
+  /**
+   * @dev returns the SVG image of a dead
+   */
   function getDead(Peep calldata peep) internal view returns (string memory svg) {
     uint256 genes = peep.genes;    
     // avoiding 'Stack too deep' error
@@ -399,6 +438,9 @@ contract PeepsMetadata {
       );
   }
 
+  /**
+   * @dev returns ages of a peep
+   */
   function getTimes(uint256 genes) external view returns (
     uint32 kidTime,
     uint32 adultTime,

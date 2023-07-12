@@ -85,7 +85,7 @@ return (
     <div className="flex items-center justify-center flex-row my-4">
     <div className="flex items-center justify-center flex-col w-9/12">
       <p className="text-xl mt-1 text-center">
-        {whose} peeps:
+        {whose} Peeps:
       </p>
     <div className="flex flex-col sm:flex-row">
       {!isLoadingPeepSvgs && 

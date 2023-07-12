@@ -1,6 +1,10 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
+/**
+ * @title SVGData
+ * @dev returns parts of a peep's body
+ */
 library SVGData {
   bytes16 internal constant ALPHABET = '0123456789abcdef';
   uint256 constant NUMBER_OF_HATS = 3;
@@ -234,9 +238,10 @@ library SVGData {
   function toColor(uint24 color) internal pure returns (string memory) {
     bytes3 value = bytes3(color);
     bytes memory buffer = new bytes(6);
-    for (uint256 i = 0; i < 3; i++) {
+    for (uint256 i; i < 3;) {
       buffer[i*2+1] = ALPHABET[uint8(value[i]) & 0xf];
       buffer[i*2] = ALPHABET[uint8(value[i]>>4) & 0xf];
+      unchecked {++i;}
     }    
     return string(buffer);
   }

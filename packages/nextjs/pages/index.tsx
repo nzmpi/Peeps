@@ -405,7 +405,7 @@ const Home: NextPage = () => {
         return;
       }
 
-      if (to === signer) {
+      if (to === signer && from !== ethers.constants.AddressZero) {
         toast(
           getShortAddress(from) + " sent you " + peeps?.[tokenId.toNumber()-1].peepName, 
         {
@@ -467,7 +467,7 @@ const Home: NextPage = () => {
         They will grow, get old and die!
         </h2>       
         <p className="text-md md:text-xl mt-2 text-center max-w-lg">
-          There {getPeepsAlive() === 1 ? "is" : "are"} {getPeepsAlive()} minted peep{getPeepsAlive() === 1 ? "" : "s"} alive. You can mint {20 - getPeepsAlive()} more
+          There {getPeepsAlive() === 1 ? "is" : "are"} {getPeepsAlive()} minted Peep{getPeepsAlive() === 1 ? "" : "s"} alive. You can mint {20 - getPeepsAlive()} more
         </p>
         {getPeepsAlive() === 20 &&
         (
