@@ -9,11 +9,10 @@ import {
   useScaffoldContractWrite,
   useScaffoldEventSubscriber
 } from "~~/hooks/scaffold-eth";
-import { useAccount, Chain, useNetwork, useSwitchNetwork } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { PeepsCards } from "~~/components/assets/PeepsCards";
 import { Spinner } from "~~/components/Spinner";
 import { toast } from "react-hot-toast";
-import * as chains from "wagmi/chains";
 
 const Home: NextPage = () => {
   const [isOnlyYoursActive, setIsOnlyYoursActive] = useState(false);
@@ -24,8 +23,6 @@ const Home: NextPage = () => {
 
   const {address: signer} = useAccount();
   const { isLoading: isLoadingPeepsContract } = useDeployedContractInfo("Peeps");
-  const { chain } = useNetwork();
-  const { chains: switchChains, switchNetwork } = useSwitchNetwork();
 
   const { data: mintingFee } = useScaffoldContractRead({
     contractName: "Peeps",
