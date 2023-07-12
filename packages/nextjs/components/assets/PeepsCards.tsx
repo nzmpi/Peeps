@@ -112,7 +112,7 @@ return (
     {
       currentItems &&
       currentItems.length === 0 &&
-      !isLoadingPeepSvgs &&
+      !isLoadingPeepSvgs &&      
     (
         <div className="flex flex-row justify-center">
         <span className="font-bold text-md">

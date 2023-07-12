@@ -21,7 +21,7 @@ const Home: NextPage = () => {
   const [peepsOwned, setPeepsOwned] = useState<any[]>();
   const [ownedtokenURIs, setOwnedtokenURIs] = useState<any[]>();
 
-  const {address: signer} = useAccount();
+  const {address: signer, isConnected} = useAccount();
   const { isLoading: isLoadingPeepsContract } = useDeployedContractInfo("Peeps");
 
   const { data: mintingFee } = useScaffoldContractRead({
@@ -460,10 +460,12 @@ const Home: NextPage = () => {
   return (
     <>
       <MetaHeader/>
+      {isConnected &&
+      ( 
       <div className="flex items-center flex-col flex-grow pt-5">
         <h2 className="text-[1.8rem] md:text-[2.5rem] text-center h-16 md:h-20">Mint a unique Peep! <br/>
         They will grow, get old and die!
-        </h2>        
+        </h2>       
         <p className="text-md md:text-xl mt-2 text-center max-w-lg">
           There {getPeepsAlive() === 1 ? "is" : "are"} {getPeepsAlive()} minted peep{getPeepsAlive() === 1 ? "" : "s"} alive. You can mint {20 - getPeepsAlive()} more
         </p>
@@ -654,6 +656,14 @@ const Home: NextPage = () => {
 
         
       </div>
+      )}
+
+      {!isConnected &&
+      ( 
+        <div className="flex items-center flex-col flex-grow pt-5 mt-40">
+          <h2 className="text-[1.8rem] md:text-[2.5rem] text-center h-16 md:h-20">You need to connect your wallet!</h2>
+        </div>
+      )}
     </>
   );
 };
