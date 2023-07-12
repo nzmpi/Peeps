@@ -1,6 +1,6 @@
 # Peeps!
 
-This dApp allows users to mint and interact with Peeps.
+This dApp allows users to mint and interact with Peeps NFTs.
 
 Site (Polygon): https://peepsnft.vercel.app/
 
